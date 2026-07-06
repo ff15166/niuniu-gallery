@@ -1,0 +1,697 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>妞妞的周末日记</title>
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Serif+SC:wght@400;700;900&display=swap" rel="stylesheet">
+    <style>
+        :root { --primary: #b87a6b; --accent: #b87a6b; --text: #4a4545; --text-light: #7a7272; --text-muted: #9a9090; }
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: 'Georgia', 'Noto Serif SC', serif; background: #f0ece8; color: #4a4545; padding-bottom: 80px; }
+        
+        /* 导航 */
+        nav { padding: 20px 50px; display: flex; justify-content: space-between; align-items: center; border-bottom: 2px solid var(--text); background: #f5f1ed; }
+        .logo { font-size: 2rem; font-weight: 700; text-transform: uppercase; letter-spacing: 5px; }
+        .nav-right { display: flex; align-items: center; gap: 25px; }
+        .search-box { padding: 10px 20px; border: 2px solid var(--text); background: #f5f1ed; font-size: 0.9rem; width: 220px; outline: none; font-family: inherit; transition: all 0.3s; }
+        .search-box:focus { box-shadow: 0 0 0 3px rgba(184,122,107,0.15); }
+        .date-box { padding: 10px 15px; border: 2px solid var(--text); background: #f5f1ed; font-size: 0.9rem; outline: none; font-family: inherit; cursor: pointer; transition: all 0.3s; }
+        .date-box:focus { box-shadow: 0 0 0 3px rgba(184,122,107,0.15); }
+        .nav-links-row { display: flex; gap: 12px; flex-wrap: wrap; margin-bottom: 30px; padding-bottom: 25px; border-bottom: 2px solid var(--text); align-items: center; }
+        .nav-links-row a { text-decoration: none; color: var(--text); padding: 10px 22px; border: 2px solid var(--text); font-size: 0.9rem; letter-spacing: 1px; transition: all 0.3s; font-family: inherit; }
+        .nav-links-row a:hover, .nav-links-row a.active { background: var(--text); color: #f5f1ed; }
+        .nav-links-row a.add-tag { background: var(--text); color: #f5f1ed; border-radius: 25px; }
+        .nav-links-row a.add-tag:hover { background: #5a5555; }
+        .nav-links-row a.manage { border-color: var(--primary); color: var(--primary); border-radius: 25px; }
+        .nav-links-row a.manage:hover, .nav-links-row a.manage.active { background: var(--primary); color: #fff; }
+        
+        /* 英雄区 */
+        .hero { display: grid; grid-template-columns: 1fr 1fr; min-height: 75vh; }
+        .hero-image { background: url('photos/微信图片_2026-07-06_004502_034.jpg') center/cover no-repeat; position: relative; }
+        .hero-image::after { content: ''; position: absolute; top: 0; right: 0; width: 100px; height: 100%; background: linear-gradient(to right, transparent, #f0ece8); }
+        .hero-content { display: flex; flex-direction: column; justify-content: center; padding: 80px 60px; }
+        .hero-content .subtitle { font-size: 1rem; text-transform: uppercase; letter-spacing: 4px; color: var(--primary); margin-bottom: 20px; }
+        .hero-content h1 { font-size: 2.5rem; line-height: 1.25; margin-bottom: 20px; font-weight: 700; }
+        .hero-content h1 .highlight { color: var(--primary); }
+        .hero-content .title-line { display: flex; align-items: center; gap: 15px; margin-bottom: 20px; }
+        .hero-content .title-line .dot { width: 10px; height: 10px; background: var(--primary); border-radius: 50%; flex-shrink: 0; }
+        .hero-content .title-line .line { flex: 1; height: 1px; background: var(--primary); }
+        .hero-content p { font-size: 1rem; color: var(--text-light); line-height: 1.7; margin-bottom: 25px; }
+        .hero-stats { display: flex; gap: 40px; margin-top: 10px; }
+        .hero-stat { text-align: center; }
+        .hero-stat-num { font-size: 2.5rem; font-weight: 700; color: var(--primary); }
+        .hero-stat-label { font-size: 0.8rem; text-transform: uppercase; letter-spacing: 2px; color: var(--text-muted); }
+        
+        /* 分隔线 */
+        .section-divider { padding: 60px 50px; text-align: center; }
+        .section-divider h2 { font-size: 1rem; text-transform: uppercase; letter-spacing: 6px; color: var(--text-muted); }
+        
+        /* 杂志网格 */
+        .magazine-grid { padding: 0 50px 80px; }
+        .grid-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; }
+        .grid-title { font-size: 1.8rem; font-weight: 700; color: var(--text); }
+        .grid-filter { display: flex; gap: 10px; align-items: center; }
+        .grid-filter select { padding: 10px 20px; border: 2px solid var(--text); font-family: inherit; font-size: 0.9rem; cursor: pointer; background: #f5f1ed; transition: all 0.3s; }
+        .grid-filter select:hover { background: #ece6e2; }
+        
+        .magazine-layout { display: grid; grid-template-columns: repeat(12, 1fr); grid-auto-rows: 60px; gap: 15px; }
+        .item-1 { grid-column: span 7; grid-row: span 5; }
+        .item-2 { grid-column: span 5; grid-row: span 3; }
+        .item-3 { grid-column: span 5; grid-row: span 4; }
+        .item-4 { grid-column: span 4; grid-row: span 3; }
+        .item-5 { grid-column: span 4; grid-row: span 4; }
+        .item-6 { grid-column: span 4; grid-row: span 3; }
+        .item-7 { grid-column: span 6; grid-row: span 4; }
+        .item-8 { grid-column: span 6; grid-row: span 3; }
+        .item-9 { grid-column: span 3; grid-row: span 3; }
+        .item-10 { grid-column: span 3; grid-row: span 2; }
+        .item-11 { grid-column: span 3; grid-row: span 3; }
+        .item-12 { grid-column: span 3; grid-row: span 2; }
+        
+        .mag-item { position: relative; overflow: hidden; background: #e6e0da; cursor: pointer; }
+        .mag-item img, .mag-item video { width: 100%; height: 100%; object-fit: cover; transition: transform 0.6s ease; }
+        .mag-item:hover img, .mag-item:hover video { transform: scale(1.05); }
+        .mag-item .overlay { position: absolute; bottom: 0; left: 0; right: 0; padding: 30px; background: linear-gradient(transparent, rgba(74,69,69,0.9)); color: #fff; transform: translateY(20px); opacity: 0; transition: all 0.4s ease; }
+        .mag-item:hover .overlay { transform: translateY(0); opacity: 1; }
+        .mag-item .overlay h3 { font-size: 1.4rem; margin-bottom: 8px; font-weight: 700; }
+        .mag-item .overlay p { font-size: 0.9rem; opacity: 0.8; }
+        .mag-item .overlay .tag { display: inline-block; padding: 4px 12px; background: var(--primary); font-size: 0.75rem; margin-top: 10px; text-transform: uppercase; letter-spacing: 1px; }
+        .mag-item .video-badge { position: absolute; top: 15px; left: 15px; padding: 8px 16px; background: var(--primary); color: white; font-size: 0.8rem; font-weight: 600; letter-spacing: 1px; }
+        .mag-item .card-delete { position: absolute; top: 10px; right: 10px; width: 35px; height: 35px; background: var(--primary); border: none; color: white; cursor: pointer; font-size: 1.2rem; display: none; z-index: 5; }
+        .mag-item .card-delete.show { display: flex; align-items: center; justify-content: center; }
+        
+        /* hover stagger */
+        .mag-item:nth-child(1) .overlay { transition-delay: 0s; }
+        .mag-item:nth-child(2) .overlay { transition-delay: 0.03s; }
+        .mag-item:nth-child(3) .overlay { transition-delay: 0.06s; }
+        .mag-item:nth-child(4) .overlay { transition-delay: 0.09s; }
+        .mag-item:nth-child(5) .overlay { transition-delay: 0.12s; }
+        
+        /* 装饰元素 */
+        .decor-cell { display: flex; align-items: center; justify-content: center; padding: 20px; background: #e8e2dc; overflow: hidden; }
+        .pull-quote { text-align: center; padding: 20px 15px; }
+        .pull-quote .pq-mark { font-family: Georgia, serif; font-size: 3rem; line-height: 1; color: #b87a6b; opacity: 0.6; }
+        .pull-quote .pq-text { font-size: 0.95rem; font-style: italic; color: #7a7272; line-height: 1.7; margin: 8px 0 10px; }
+        .pull-quote .pq-author { font-size: 0.7rem; color: #a89890; letter-spacing: 3px; text-transform: uppercase; }
+        .date-stamp { display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 15px; }
+        .date-stamp .ds-month { font-size: 0.65rem; letter-spacing: 4px; color: #b87a6b; text-transform: uppercase; margin-bottom: 4px; }
+        .date-stamp .ds-day { font-size: 3rem; font-weight: 900; color: var(--text); line-height: 1; }
+        .date-stamp .ds-year { font-size: 0.75rem; letter-spacing: 5px; color: var(--text-muted); margin-top: 4px; }
+        .date-stamp .ds-line { width: 25px; height: 1px; background: #b87a6b; margin-top: 10px; }
+        .film-strip { display: flex; align-items: center; gap: 5px; padding: 12px; background: #3a3535; width: 100%; }
+        .film-strip .fs-hole { width: 8px; height: 12px; border-radius: 2px; background: #555; flex-shrink: 0; }
+        .film-strip .fs-frame { flex: 1; height: 40px; border: 1px solid #666; display: flex; align-items: center; justify-content: center; }
+        .film-strip .fs-frame span { font-size: 0.65rem; color: #999; letter-spacing: 2px; }
+        .geo-pattern { display: grid; grid-template-columns: repeat(6, 1fr); gap: 6px; padding: 15px; width: 100%; }
+        .geo-pattern .gp-dot { width: 100%; aspect-ratio: 1; border-radius: 50%; }
+        .geo-pattern .gp-dot:nth-child(1) { background: #b87a6b; }
+        .geo-pattern .gp-dot:nth-child(2) { background: #d4a090; }
+        .geo-pattern .gp-dot:nth-child(3) { background: #4a4545; }
+        .geo-pattern .gp-dot:nth-child(4) { background: #e6e0da; }
+        .geo-pattern .gp-dot:nth-child(5) { background: #d4a090; opacity: 0.5; }
+        .geo-pattern .gp-dot:nth-child(6) { background: #b87a6b; opacity: 0.3; }
+        .camera-icon { display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 10px; padding: 15px; }
+        .camera-icon .ci-body { width: 45px; height: 32px; border: 2px solid var(--text); border-radius: 5px; position: relative; }
+        .camera-icon .ci-body::before { content: ''; position: absolute; top: -8px; left: 50%; transform: translateX(-50%); width: 16px; height: 6px; border: 2px solid var(--text); border-bottom: none; border-radius: 3px 3px 0 0; }
+        .camera-icon .ci-body::after { content: ''; position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); width: 16px; height: 16px; border: 2px solid var(--text); border-radius: 50%; }
+        .camera-icon .ci-text { font-size: 0.65rem; letter-spacing: 3px; color: var(--text-muted); text-transform: uppercase; }
+        .stat-block { display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 15px; }
+        .stat-block .sb-num { font-size: 3.5rem; font-weight: 900; color: #b87a6b; line-height: 1; }
+        .stat-block .sb-unit { font-size: 0.75rem; color: var(--text-muted); letter-spacing: 2px; margin-top: 6px; }
+        .stat-block .sb-line { width: 20px; height: 2px; background: #b87a6b; margin-top: 8px; }
+        .diagonal-fill { background: repeating-linear-gradient(45deg, transparent, transparent 6px, rgba(184,122,107,0.08) 6px, rgba(184,122,107,0.08) 12px); display: flex; align-items: center; justify-content: center; padding: 15px; width: 100%; height: 100%; }
+        .diagonal-fill .df-text { font-size: 0.75rem; letter-spacing: 4px; color: #b8aaa2; text-transform: uppercase; }
+        .divider-combo { display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 8px; padding: 15px; }
+        .divider-combo .dc-line { width: 50px; height: 1px; background: #c8bab2; }
+        .divider-combo .dc-diamond { width: 6px; height: 6px; background: #b87a6b; transform: rotate(45deg); }
+        .divider-combo .dc-text { font-size: 0.65rem; letter-spacing: 3px; color: #a89890; text-transform: uppercase; }
+        .polaroid { background: #f5f1ed; padding: 8px 8px 28px; width: 100px; transform: rotate(-3deg); box-shadow: 2px 3px 10px rgba(74,69,69,0.12); }
+        .polaroid .p-img { width: 100%; height: 65px; background: linear-gradient(135deg, #d4a090, #b87a6b); }
+        .polaroid .p-text { font-size: 0.6rem; color: #a89890; text-align: center; margin-top: 8px; font-style: italic; }
+        .negative-strip { display: flex; flex-direction: column; gap: 3px; padding: 10px; background: #2a2525; width: 100%; }
+        .negative-strip .ns-row { display: flex; gap: 3px; }
+        .negative-strip .ns-frame { flex: 1; height: 28px; background: #3a3535; border: 1px solid #555; position: relative; overflow: hidden; }
+        .negative-strip .ns-frame::after { content: ''; position: absolute; inset: 0; background: linear-gradient(135deg, rgba(184,122,107,0.15), rgba(212,160,144,0.15)); }
+        .map-pin { display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 6px; padding: 15px; }
+        .map-pin .mp-icon { font-size: 1.8rem; }
+        .map-pin .mp-coord { font-size: 0.65rem; color: var(--text-muted); letter-spacing: 1px; }
+        .map-pin .mp-name { font-size: 0.8rem; color: var(--text); letter-spacing: 2px; }
+        .timeline-node { display: flex; align-items: center; gap: 12px; padding: 15px; width: 100%; }
+        .timeline-node .tn-dot { width: 10px; height: 10px; border-radius: 50%; border: 2px solid #b87a6b; flex-shrink: 0; }
+        .timeline-node .tn-line { flex: 1; height: 1px; background: linear-gradient(to right, #b87a6b, transparent); }
+        .timeline-node .tn-time { font-size: 0.7rem; color: var(--text-muted); letter-spacing: 2px; }
+        .weather-card { display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 6px; padding: 15px; }
+        .weather-card .wc-icon { font-size: 2rem; }
+        .weather-card .wc-temp { font-size: 1.2rem; font-weight: 700; color: var(--text); }
+        .weather-card .wc-desc { font-size: 0.7rem; color: var(--text-muted); letter-spacing: 2px; }
+        .hand-drawn { position: relative; padding: 15px; display: flex; align-items: center; justify-content: center; width: 100%; }
+        .hand-drawn svg { width: 100%; height: 40px; }
+        .hand-drawn .hd-text { position: absolute; font-size: 0.7rem; color: #a89890; letter-spacing: 2px; font-style: italic; }
+        .word-wall { display: flex; flex-wrap: wrap; gap: 5px 10px; align-items: center; justify-content: center; padding: 15px; }
+        .word-wall .ww-word { font-size: 0.7rem; color: #b8aaa2; letter-spacing: 1px; text-transform: uppercase; }
+        .word-wall .ww-word:nth-child(odd) { color: #b87a6b; }
+        .word-wall .ww-word:nth-child(3n) { font-weight: 700; color: #4a4545; }
+        .decor-item { position: relative; overflow: hidden; cursor: default; }
+        .decor-item .overlay { display: none; }
+        
+        /* 灯箱 */
+        .lightbox { display: none; position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: #2a2525; z-index: 1000; align-items: center; justify-content: center; }
+        .lightbox.active { display: flex; }
+        .lightbox img, .lightbox video { max-width: 85vw; max-height: 85vh; object-fit: contain; width: auto; height: auto; }
+        .lb-close { position: fixed; top: 30px; right: 40px; width: 50px; height: 50px; background: none; border: 2px solid rgba(255,255,255,0.4); color: #fff; font-size: 1.5rem; cursor: pointer; transition: all 0.3s; }
+        .lb-close:hover { background: #b87a6b; border-color: #b87a6b; }
+        .lb-nav { position: fixed; top: 50%; transform: translateY(-50%); width: 60px; height: 60px; background: none; border: 2px solid rgba(255,255,255,0.25); color: #fff; font-size: 1.5rem; cursor: pointer; transition: all 0.3s; }
+        .lb-nav:hover { background: #b87a6b; border-color: #b87a6b; }
+        .lb-prev { left: 30px; }
+        .lb-next { right: 30px; }
+        .lb-info { position: fixed; bottom: 40px; left: 50%; transform: translateX(-50%); text-align: center; }
+        .lb-title { font-size: 1.5rem; font-weight: 700; margin-bottom: 8px; color: #fff; }
+        .lb-desc { font-size: 1rem; color: rgba(255,255,255,0.5); }
+        .lb-controls { position: fixed; bottom: 100px; left: 50%; transform: translateX(-50%); display: flex; gap: 15px; }
+        .lb-btn { padding: 12px 28px; background: none; border: 1px solid rgba(255,255,255,0.25); color: #fff; cursor: pointer; font-size: 0.9rem; font-family: inherit; letter-spacing: 1px; transition: all 0.3s; }
+        .lb-btn:hover { background: #f5f1ed; color: #4a4545; }
+        
+        /* 底部工具栏 */
+        .bottom-bar { position: fixed; bottom: 0; left: 0; right: 0; background: #f5f1ed; border-top: 2px solid var(--text); padding: 15px 50px; display: flex; justify-content: space-between; align-items: center; z-index: 100; }
+        .bottom-left { display: flex; gap: 15px; }
+        .bottom-btn { padding: 10px 20px; border: 1px solid #c8bab2; background: #f5f1ed; cursor: pointer; font-family: inherit; font-size: 0.9rem; transition: all 0.3s; color: var(--text); }
+        .bottom-btn:hover { background: var(--text); color: #f5f1ed; border-color: var(--text); }
+        .bottom-btn.upload-btn { background: #b87a6b; color: #fff; border-color: #b87a6b; }
+        .bottom-btn.upload-btn:hover { background: #a06b5d; }
+        .music-bar { display: flex; align-items: center; gap: 12px; }
+        .music-btn { width: 40px; height: 40px; border-radius: 50%; border: 2px solid var(--text); background: #f5f1ed; cursor: pointer; font-size: 1.1rem; transition: all 0.3s; }
+        .music-btn:hover { background: var(--text); color: #f5f1ed; }
+        .music-upload-label { cursor: pointer; font-size: 1.2rem; padding: 8px; }
+        .music-upload { display: none; }
+        
+        /* 弹窗 */
+        .modal { display: none; position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(74,69,69,0.7); z-index: 2000; align-items: center; justify-content: center; }
+        .modal.active { display: flex; }
+        .modal-content { background: #f5f1ed; padding: 40px; width: 90%; max-width: 500px; }
+        .modal-title { font-size: 1.4rem; font-weight: 700; margin-bottom: 25px; padding-bottom: 15px; border-bottom: 2px solid var(--text); }
+        .modal-input { width: 100%; padding: 14px; border: 2px solid #c8bab2; font-family: inherit; font-size: 1rem; margin-bottom: 20px; outline: none; background: #f0ece8; }
+        .modal-input:focus { border-color: #b87a6b; }
+        .modal-btns { display: flex; gap: 12px; justify-content: flex-end; }
+        .modal-btn { padding: 12px 30px; border: 2px solid var(--text); background: #f5f1ed; cursor: pointer; font-family: inherit; font-size: 0.95rem; transition: all 0.3s; color: var(--text); }
+        .modal-btn-primary { background: #b87a6b; color: #fff; border-color: #b87a6b; }
+        .modal-btn-primary:hover { background: #a06b5d; }
+        .modal-btn-secondary:hover { background: #ece6e2; }
+        
+        /* 上传区域 */
+        .upload-area { border: 3px dashed #c8bab2; padding: 50px; text-align: center; cursor: pointer; margin-bottom: 20px; transition: all 0.3s; }
+        .upload-area:hover { border-color: #b87a6b; background: #ece6e2; }
+        .upload-area.dragover { border-color: #b87a6b; background: #e8e2dc; }
+        .upload-icon { font-size: 3rem; margin-bottom: 10px; }
+        .upload-text { color: #8a8080; }
+        .upload-warn { color: var(--primary); font-size: 0.8rem; margin-top: 10px; }
+        .preview-list { display: flex; flex-wrap: wrap; gap: 10px; margin-bottom: 20px; }
+        .preview-item { position: relative; width: 80px; height: 80px; overflow: hidden; border: 1px solid #c8bab2; }
+        .preview-item img, .preview-item video { width: 100%; height: 100%; object-fit: cover; }
+        .preview-remove { position: absolute; top: 0; right: 0; width: 22px; height: 22px; background: #b87a6b; border: none; color: white; cursor: pointer; font-size: 0.7rem; }
+        .tag-select { display: flex; flex-wrap: wrap; gap: 10px; margin-bottom: 20px; }
+        .tag-option { padding: 10px 20px; border: 2px solid #c8bab2; cursor: pointer; transition: all 0.3s; font-size: 0.9rem; background: #f5f1ed; }
+        .tag-option:hover, .tag-option.selected { background: #b87a6b; color: #fff; border-color: #b87a6b; }
+        
+        /* 天气组件 */
+        .weather-widget { display: flex; align-items: center; gap: 10px; margin-left: auto; }
+        .weather-widget .weather-icon { font-size: 1.5rem; }
+        .weather-info { display: flex; flex-direction: column; }
+        .weather-temp { font-size: 1.1rem; font-weight: 700; color: var(--text); }
+        .weather-desc { font-size: 0.7rem; color: var(--text-muted); }
+        .weather-location { font-size: 0.65rem; color: #a89890; margin-top: 2px; }
+        
+        /* 底部背景图 */
+        .bottom-hero { position: relative; height: 400px; overflow: hidden; margin-top: 40px; }
+        .bottom-hero-bg { position: absolute; top: 0; left: 0; right: 0; bottom: 0; background: url('photos/微信图片_2026-07-06_004623_486.jpg') center/cover no-repeat; }
+        .bottom-hero-bg::before { content: ''; position: absolute; top: 0; left: 0; right: 0; bottom: 0; background: linear-gradient(to bottom, rgba(74,69,69,0.3), rgba(74,69,69,0.7)); }
+        .bottom-hero-content { position: relative; z-index: 1; height: 100%; display: flex; flex-direction: column; justify-content: center; align-items: center; text-align: center; color: white; padding: 0 40px; }
+        .bottom-hero-content h2 { font-size: 2.5rem; font-weight: 700; margin-bottom: 15px; }
+        .bottom-hero-content p { font-size: 1.1rem; opacity: 0.8; max-width: 500px; line-height: 1.8; }
+        .bottom-hero-content .divider { width: 60px; height: 2px; background: #fff; margin: 20px 0; opacity: 0.4; }
+        
+        footer { padding: 40px 50px; text-align: center; color: #a89890; font-size: 0.85rem; background: #3a3535; margin-bottom: 0; }
+        
+        @media (max-width: 1100px) {
+            .magazine-layout { grid-template-columns: repeat(8, 1fr); }
+            .item-1, .item-7 { grid-column: span 5; }
+            .item-2, .item-3 { grid-column: span 4; }
+            .item-4, .item-5, .item-6, .item-8 { grid-column: span 4; }
+        }
+        @media (max-width: 900px) {
+            .hero { grid-template-columns: 1fr; min-height: auto; }
+            .hero-image { height: 280px; }
+            .hero-image::after { display: none; }
+            .hero-content { padding: 40px 30px; }
+            .magazine-layout { grid-template-columns: repeat(6, 1fr); }
+            .item-1 { grid-column: span 6; grid-row: span 4; }
+            .item-2, .item-3 { grid-column: span 3; grid-row: span 3; }
+            .item-4, .item-5, .item-6, .item-8 { grid-column: span 3; grid-row: span 2; }
+            .item-7 { grid-column: span 6; grid-row: span 3; }
+            nav { padding: 15px 20px; flex-wrap: wrap; gap: 15px; }
+            .magazine-grid, .section-divider { padding-left: 20px; padding-right: 20px; }
+            .bottom-bar { padding: 12px 20px; flex-wrap: wrap; gap: 10px; }
+            .hero-content h1 { font-size: 2rem; }
+        }
+        @media (max-width: 600px) {
+            .magazine-layout { grid-template-columns: repeat(2, 1fr); }
+            .magazine-layout [class*="item-"] { grid-column: span 1; grid-row: span 2; }
+            .hero-content h1 { font-size: 1.7rem; }
+            .hero-stats { gap: 20px; }
+            .hero-stat-num { font-size: 1.8rem; }
+        }
+    </style>
+</head>
+<body>
+    <nav>
+        <div class="logo">Gallery</div>
+        <div class="weather-widget">
+            <div class="weather-icon" id="weatherIcon">☀️</div>
+            <div class="weather-info">
+                <div class="weather-temp" id="weatherTemp">--°C</div>
+                <div class="weather-desc" id="weatherDesc">加载中...</div>
+                <div class="weather-location" id="weatherLocation">📍 定位中...</div>
+            </div>
+        </div>
+    </nav>
+    
+    <div class="hero">
+        <div class="hero-image"></div>
+        <div class="hero-content">
+            <div class="subtitle">Photo Gallery</div>
+            <h1>用镜头记录<br><span class="highlight">天才少女</span>生活的美好</h1>
+            <div class="title-line"><div class="dot"></div><div class="line"></div></div>
+            <p>每一张照片都是一个故事，每一个瞬间都值得被珍藏。在这里，每一帧都值得被看见。</p>
+
+        </div>
+    </div>
+    
+    <div class="section-divider">
+        <h2>精选照片</h2>
+    </div>
+    
+    <div class="magazine-grid">
+        <div class="grid-header">
+            <div class="grid-title">全部内容</div>
+            <div class="grid-filter">
+                <input type="text" class="search-box" id="searchBox" placeholder="搜索标题/描述...">
+                <input type="date" class="date-box" id="dateFilter" onchange="applyFilters()">
+                <select id="videoFilter" onchange="filterVideos(this.value)">
+                    <option value="all">全部视频</option>
+                </select>
+            </div>
+        </div>
+        <div class="nav-links-row" id="navLinks"></div>
+        <div class="magazine-layout" id="galleryGrid"></div>
+    </div>
+    
+    <div class="bottom-hero">
+        <div class="bottom-hero-bg"></div>
+        <div class="bottom-hero-content">
+            <div class="divider"></div>
+            <h2>记录生活的美好</h2>
+            <p>每一张照片都是时光的印记，每一个瞬间都值得被珍藏。用镜头捕捉世界，用心灵感受生活。</p>
+            <div class="divider"></div>
+        </div>
+    </div>
+    
+    <footer>© 2026 Gallery · Magazine Style</footer>
+    
+    <div class="bottom-bar">
+        <div class="bottom-left">
+            <button class="bottom-btn upload-btn" onclick="openUploadModal()">📤 上传</button>
+        </div>
+        <div class="music-bar">
+            <button class="music-btn" id="musicBtn">🔇</button>
+            <label class="music-upload-label" title="上传音乐">
+                <input type="file" class="music-upload" id="musicUpload" accept="audio/*">
+                🎵
+            </label>
+        </div>
+    </div>
+    
+    <div class="lightbox" id="lightbox">
+        <button class="lb-close" onclick="closeLightbox()">&times;</button>
+        <button class="lb-nav lb-prev" onclick="prevMedia()">&#10094;</button>
+        <button class="lb-nav lb-next" onclick="nextMedia()">&#10095;</button>
+        <div id="lbContent"></div>
+        <div class="lb-controls">
+            <button class="lb-btn" onclick="downloadCurrent()">下载</button>
+            <button class="lb-btn" onclick="showInfo()">信息</button>
+        </div>
+        <div class="lb-info">
+            <div class="lb-title" id="lbTitle"></div>
+            <div class="lb-desc" id="lbDesc"></div>
+        </div>
+    </div>
+    
+    <div class="modal" id="addTagModal">
+        <div class="modal-content">
+            <div class="modal-title">添加新标签</div>
+            <input type="text" class="modal-input" id="newTagName" placeholder="输入标签名称...">
+            <div class="modal-btns">
+                <button class="modal-btn modal-btn-secondary" onclick="closeModal('addTagModal')">取消</button>
+                <button class="modal-btn modal-btn-primary" onclick="addTag()">添加</button>
+            </div>
+        </div>
+    </div>
+    
+    <div class="modal" id="uploadModal">
+        <div class="modal-content">
+            <div class="modal-title">上传照片/视频</div>
+            <div class="upload-area" id="uploadArea">
+                <div class="upload-icon">📁</div>
+                <div class="upload-text">点击或拖拽文件到此处<br>支持 JPG、PNG、MP4 等格式</div>
+                <div class="upload-warn">⚠️ 文件以 Base64 存储于浏览器本地，大文件可能失败，仅适合少量小图演示</div>
+                <input type="file" id="fileInput" multiple accept="image/*,video/*" style="display:none;">
+            </div>
+            <div class="preview-list" id="previewList"></div>
+            <label style="display:block;margin-bottom:10px;font-weight:600;">选择标签：</label>
+            <div class="tag-select" id="tagSelect"></div>
+            <div class="modal-btns">
+                <button class="modal-btn modal-btn-secondary" onclick="closeModal('uploadModal')">取消</button>
+                <button class="modal-btn modal-btn-primary" onclick="doUpload()">上传</button>
+            </div>
+        </div>
+    </div>
+    
+    <audio id="bgMusic" loop preload="auto"></audio>
+    
+    <script>
+        const defaultMusic = 'https://music.163.com/song/media/outer/url?id=3380907905.mp3';
+        const defaultMediaData = [
+            { type:'photo', src:'photos/微信图片_2026-07-06_004502_034.jpg', title:'花丛遮眼', desc:'用蔷薇花遮住眼睛', cat:'自拍', time:'2026-07-06' },
+            { type:'photo', src:'photos/微信图片_2026-07-06_004512_302.jpg', title:'蓝色外套', desc:'蔷薇花背景自拍', cat:'自拍', time:'2026-07-06' },
+            { type:'photo', src:'photos/微信图片_2026-07-06_004516_177.jpg', title:'手持蔷薇', desc:'拿着花朵的自拍', cat:'自拍', time:'2026-07-06' },
+            { type:'photo', src:'photos/微信图片_2026-07-06_004457_816.jpg', title:'蔷薇花墙', desc:'满墙盛开的蔷薇花', cat:'风景', time:'2026-07-06' },
+            { type:'photo', src:'photos/微信图片_2026-07-06_004245_514.jpg', title:'M4A1-游骑兵', desc:'武器排行榜', cat:'游戏', time:'2026-07-06' },
+            { type:'photo', src:'photos/微信图片_2026-07-06_004308_112.jpg', title:'全国十强', desc:'M4A1全国最强', cat:'游戏', time:'2026-07-06' },
+            { type:'photo', src:'photos/微信图片_2026-07-06_004313_036.jpg', title:'M4A1-雷暴', desc:'武器排行榜', cat:'游戏', time:'2026-07-06' },
+            { type:'photo', src:'photos/微信图片_2026-07-06_004606_516.jpg', title:'肉松小贝', desc:'酥脆肉松搭配海苔', cat:'美食', time:'2026-07-06' },
+            { type:'photo', src:'photos/微信图片_2026-07-06_004623_486.jpg', title:'书架前阅读', desc:'JK制服看书', cat:'书店', time:'2026-07-06' },
+            { type:'video', src:'photos/微信视频2026-07-06_004411_670.mp4', title:'脸部特写', desc:'可爱自拍', cat:'自拍视频', time:'2026-07-06' },
+            { type:'video', src:'photos/微信视频2026-07-06_004431_260.mp4', title:'草地自拍', desc:'水手服自拍', cat:'自拍视频', time:'2026-07-06' },
+            { type:'video', src:'photos/微信视频2026-07-06_004716_926.mp4', title:'公园漫步', desc:'散步', cat:'户外', time:'2026-07-06' },
+            { type:'video', src:'photos/微信视频2026-07-06_004343_804.mp4', title:'便利店', desc:'挑选饮料', cat:'日常', time:'2026-07-06' },
+            { type:'video', src:'photos/微信视频2026-07-06_004449_851.mp4', title:'闺蜜互动', desc:'开心互动', cat:'日常', time:'2026-07-06' }
+        ];
+        
+        let tags = JSON.parse(localStorage.getItem('gallery_tags') || '["自拍","风景","游戏","美食","书店","自拍视频","户外","日常"]');
+        let mediaData = JSON.parse(localStorage.getItem('gallery_media')) || [...defaultMediaData];
+        let currentTag = 'all';
+        let manageMode = false;
+        let curIdx = 0;
+        let isPlaying = false;
+        let uploadFilesList = [];
+        let uploadTag = '';
+        
+        const decorTemplates = [
+            { cls:'pull-quote', size:'item-9', html:'<div class="pq-mark">"</div><div class="pq-text">摄影是光与影的诗歌<br>每一帧都是故事</div><div class="pq-author">— 影像艺术</div>' },
+            { cls:'date-stamp', size:'item-9', html:'<div class="ds-month">JULY</div><div class="ds-day">06</div><div class="ds-year">2 0 2 6</div><div class="ds-line"></div>' },
+            { cls:'film-strip', size:'item-10', html:'<div class="fs-hole"></div><div class="fs-hole"></div><div class="fs-hole"></div><div class="fs-frame"><span>35mm</span></div><div class="fs-hole"></div><div class="fs-hole"></div><div class="fs-hole"></div>' },
+            { cls:'geo-pattern', size:'item-9', html:'<div class="gp-dot"></div><div class="gp-dot"></div><div class="gp-dot"></div><div class="gp-dot"></div><div class="gp-dot"></div><div class="gp-dot"></div><div class="gp-dot"></div><div class="gp-dot"></div><div class="gp-dot"></div><div class="gp-dot"></div><div class="gp-dot"></div><div class="gp-dot"></div>' },
+            { cls:'camera-icon', size:'item-9', html:'<div class="ci-body"></div><div class="ci-text">Capture</div>' },
+            { cls:'stat-block', size:'item-9', html:'<div class="sb-num" id="totalPhotos">0</div><div class="sb-unit">张照片</div><div class="sb-line"></div>' },
+            { cls:'diagonal-fill', size:'item-10', html:'<div class="df-text">Summer 2026</div>' },
+            { cls:'divider-combo', size:'item-9', html:'<div class="dc-line"></div><div class="dc-diamond"></div><div class="dc-text">Gallery</div><div class="dc-diamond"></div><div class="dc-line"></div>' },
+            { cls:'', size:'item-9', html:'<div class="polaroid"><div class="p-img"></div><div class="p-text">summer days</div></div>', style:'justify-content:center;' },
+            { cls:'negative-strip', size:'item-10', html:'<div class="ns-row"><div class="ns-frame"></div><div class="ns-frame"></div><div class="ns-frame"></div></div><div class="ns-row"><div class="ns-frame"></div><div class="ns-frame"></div><div class="ns-frame"></div></div>' },
+            { cls:'map-pin', size:'item-9', html:'<div class="mp-icon">📍</div><div class="mp-coord">31.2304° N, 121.4737° E</div><div class="mp-name">上海</div>' },
+            { cls:'timeline-node', size:'item-10', html:'<div class="tn-dot"></div><div class="tn-line"></div><div class="tn-time">14 : 30</div>' },
+            { cls:'weather-card', size:'item-9', html:'<div class="wc-icon">☀️</div><div class="wc-temp">28°C</div><div class="wc-desc">晴 · 适合拍照</div>' },
+            { cls:'hand-drawn', size:'item-10', html:'<svg viewBox="0 0 200 60" fill="none"><path d="M10 30 Q50 10, 100 30 T190 30" stroke="#b87a6b" stroke-width="1.5" stroke-dasharray="4 3" fill="none"/><circle cx="100" cy="30" r="4" fill="#b87a6b"/></svg><div class="hd-text">memory lane</div>' },
+            { cls:'word-wall', size:'item-9', html:'<span class="ww-word">photo</span><span class="ww-word">光</span><span class="ww-word">moment</span><span class="ww-word">影</span><span class="ww-word">记忆</span><span class="ww-word">capture</span><span class="ww-word">瞬间</span><span class="ww-word">镜头</span>' },
+            { cls:'stat-block', size:'item-9', html:'<div class="sb-num" id="totalVideos">0</div><div class="sb-unit">个视频</div><div class="sb-line"></div>' },
+            { cls:'pull-quote', size:'item-9', html:'<div class="pq-mark">"</div><div class="pq-text">时光如梭<br>岁月静好</div><div class="pq-author">— 生活感悟</div>' }
+        ];
+        
+        function buildDecorHTML(d) {
+            const style = d.style ? ' style="'+d.style+'"' : '';
+            return '<div class="mag-item decor-item '+d.size+' decor-cell '+d.cls+'"'+style+'>'+d.html+'</div>';
+        }
+        
+        function init() {
+            renderNav();
+            renderGallery();
+            initSearch();
+            initMusic();
+            initUpload();
+            updateStats();
+            renderVideoFilter();
+        }
+        
+        function renderNav() {
+            const navLinks = document.getElementById('navLinks');
+            let html = '<a href="#" class="active" data-cat="all">全部</a>';
+            tags.forEach(tag => { html += '<a href="#" data-cat="'+tag+'">'+tag+'</a>'; });
+            html += '<a href="#" class="add-tag" onclick="openAddTagModal();return false;">+ 添加</a>';
+            html += '<a href="#" class="manage" onclick="toggleManageMode();return false;">管理</a>';
+            navLinks.innerHTML = html;
+            navLinks.querySelectorAll('a:not(.add-tag):not(.manage)').forEach(a => {
+                a.addEventListener('click', function(e) {
+                    e.preventDefault();
+                    navLinks.querySelectorAll('a').forEach(b => b.classList.remove('active'));
+                    this.classList.add('active');
+                    currentTag = this.dataset.cat;
+                    renderGallery();
+                });
+            });
+        }
+        
+        function renderGallery() {
+            const grid = document.getElementById('galleryGrid');
+            const filtered = currentTag === 'all' ? mediaData : mediaData.filter(d => d.cat === currentTag);
+            const sizePattern = ['item-1','item-2','item-3','item-4','item-5','item-6','item-7','item-8','item-9','item-10','item-11','item-12'];
+            let html = '';
+            let decorIdx = 0;
+            
+            filtered.forEach((item, i) => {
+                const idx = mediaData.indexOf(item);
+                const isVideo = item.type === 'video';
+                const sizeClass = sizePattern[i % sizePattern.length];
+                html += '<div class="mag-item '+sizeClass+'" onclick="openLightbox('+idx+')">'
+                    + (isVideo ? '<span class="video-badge">视频</span>' : '')
+                    + (isVideo ? '<video muted><source src="'+item.src+'" type="video/mp4"></video>' : '<img src="'+item.src+'" alt="">')
+                    + '<button class="card-delete'+(manageMode?' show':'')+'" onclick="event.stopPropagation();deleteItem('+idx+')">✕</button>'
+                    + '<div class="overlay"><h3>'+item.title+'</h3><p>'+item.desc+'</p><span class="tag">'+item.cat+'</span></div></div>';
+                if ((i + 1) % 4 === 0 && decorIdx < decorTemplates.length && i < filtered.length - 1) {
+                    html += buildDecorHTML(decorTemplates[decorIdx]);
+                    decorIdx++;
+                }
+            });
+            
+            grid.innerHTML = html;
+            updateStats();
+        }
+        
+        function renderVideoFilter() {
+            const videoCats = [...new Set(mediaData.filter(d => d.type === 'video').map(d => d.cat))];
+            document.getElementById('videoFilter').innerHTML = '<option value="all">全部视频</option>' + videoCats.map(c => '<option value="'+c+'">'+c+'</option>').join('');
+        }
+        
+        function filterVideos(cat) {
+            document.querySelectorAll('.mag-item:not(.decor-item)').forEach(card => {
+                const onclick = card.getAttribute('onclick');
+                if (!onclick) return;
+                const match = onclick.match(/openLightbox\((\d+)\)/);
+                if (!match) return;
+                const item = mediaData[parseInt(match[1])];
+                if (!item) return;
+                card.style.display = (item.type === 'video' && (cat === 'all' || item.cat === cat)) ? '' : (item.type !== 'video' ? 'none' : 'none');
+            });
+        }
+        
+        function updateStats() {
+            const photoCount = mediaData.filter(d => d.type === 'photo').length;
+            const videoCount = mediaData.filter(d => d.type === 'video').length;
+            const el = id => document.getElementById(id);
+            if (el('heroPhotos')) el('heroPhotos').textContent = photoCount;
+            if (el('heroVideos')) el('heroVideos').textContent = videoCount;
+            if (el('heroTags')) el('heroTags').textContent = tags.length;
+            if (el('totalPhotos')) el('totalPhotos').textContent = photoCount;
+            if (el('totalVideos')) el('totalVideos').textContent = videoCount;
+        }
+        
+        function toggleManageMode() {
+            manageMode = !manageMode;
+            document.querySelector('.manage').classList.toggle('active', manageMode);
+            document.querySelectorAll('.card-delete').forEach(el => el.classList.toggle('show', manageMode));
+        }
+        
+        function openAddTagModal() { document.getElementById('addTagModal').classList.add('active'); document.getElementById('newTagName').focus(); }
+        function addTag() {
+            const name = document.getElementById('newTagName').value.trim();
+            if (name && !tags.includes(name)) { tags.push(name); localStorage.setItem('gallery_tags', JSON.stringify(tags)); renderNav(); renderVideoFilter(); updateStats(); }
+            document.getElementById('newTagName').value = '';
+            closeModal('addTagModal');
+        }
+        function deleteItem(idx) { if (confirm('确定删除？')) { mediaData.splice(idx, 1); saveData(); renderGallery(); updateStats(); } }
+        function saveData() { localStorage.setItem('gallery_media', JSON.stringify(mediaData)); }
+        
+        function getItemFromCard(card) {
+            const onclick = card.getAttribute('onclick');
+            if (!onclick) return null;
+            const match = onclick.match(/openLightbox\((\d+)\)/);
+            return match ? mediaData[parseInt(match[1])] : null;
+        }
+
+        function initSearch() { document.getElementById('searchBox').addEventListener('input', applyFilters); }
+        function applyFilters() {
+            const q = document.getElementById('searchBox').value.toLowerCase();
+            const dateVal = document.getElementById('dateFilter').value;
+            document.querySelectorAll('.mag-item:not(.decor-item)').forEach(card => {
+                const item = getItemFromCard(card);
+                if (!item) return;
+                const textMatch = !q || item.title.toLowerCase().includes(q) || item.desc.toLowerCase().includes(q) || item.cat.toLowerCase().includes(q);
+                const dateMatch = !dateVal || item.time === dateVal;
+                card.style.display = (textMatch && dateMatch) ? '' : 'none';
+            });
+        }
+        
+        function initMusic() {
+            const music = document.getElementById('bgMusic');
+            const btn = document.getElementById('musicBtn');
+            const upload = document.getElementById('musicUpload');
+            music.src = defaultMusic;
+            music.volume = 0.3; // 设置音量为30%
+            
+            // 自动播放音乐
+            music.play().then(() => {
+                btn.textContent = '🔊';
+                isPlaying = true;
+            }).catch(() => {
+                document.addEventListener('click', function autoPlay() {
+                    music.play().then(() => {
+                        btn.textContent = '🔊';
+                        isPlaying = true;
+                        document.removeEventListener('click', autoPlay);
+                    }).catch(() => {});
+                }, { once: true });
+            });
+            
+            btn.onclick = () => { if (isPlaying) { music.pause(); btn.textContent = '🔇'; } else { music.play().catch(() => {}); btn.textContent = '🔊'; } isPlaying = !isPlaying; };
+            upload.onchange = (e) => { const file = e.target.files[0]; if (file) { music.src = URL.createObjectURL(file); music.load(); music.volume = 0.3; if (!isPlaying) btn.click(); } };
+        }
+        
+        function pauseCurrentVideo() { const v = document.querySelector('#lbContent video'); if (v) { v.pause(); v.src = ''; } }
+        let bgMusicWasPlaying = false;
+        
+        function openLightbox(idx) {
+            curIdx = idx;
+            const item = mediaData[idx];
+            const isVideo = item.type === 'video';
+            
+            pauseCurrentVideo();
+            
+            // 如果打开的是视频，暂停背景音乐
+            if (isVideo && isPlaying) {
+                bgMusicWasPlaying = true;
+                document.getElementById('bgMusic').pause();
+                document.getElementById('musicBtn').textContent = '🔇';
+                isPlaying = false;
+            }
+            
+            document.getElementById('lbContent').innerHTML = isVideo ? '<video src="'+item.src+'" controls autoplay></video>' : '<img src="'+item.src+'">';
+            document.getElementById('lbTitle').textContent = item.title;
+            document.getElementById('lbDesc').textContent = item.desc + ' · ' + item.cat;
+            document.getElementById('lightbox').classList.add('active');
+        }
+        
+        function closeLightbox() { 
+            pauseCurrentVideo(); 
+            document.getElementById('lightbox').classList.remove('active');
+            
+            // 如果之前背景音乐在播放，恢复播放
+            if (bgMusicWasPlaying) {
+                document.getElementById('bgMusic').play();
+                document.getElementById('musicBtn').textContent = '🔊';
+                isPlaying = true;
+                bgMusicWasPlaying = false;
+            }
+        }
+        function prevMedia() { curIdx = (curIdx - 1 + mediaData.length) % mediaData.length; openLightbox(curIdx); }
+        function nextMedia() { curIdx = (curIdx + 1) % mediaData.length; openLightbox(curIdx); }
+        function downloadCurrent() { const item = mediaData[curIdx]; const a = document.createElement('a'); a.href = item.src; a.download = item.title; a.click(); }
+        function showInfo() { const item = mediaData[curIdx]; alert('标题：'+item.title+'\n描述：'+item.desc+'\n标签：'+item.cat+'\n时间：'+item.time); }
+        
+        function initUpload() {
+            const area = document.getElementById('uploadArea');
+            const input = document.getElementById('fileInput');
+            area.onclick = (e) => { if (e.target.closest('.upload-warn')) return; input.click(); };
+            area.ondragover = (e) => { e.preventDefault(); area.classList.add('dragover'); };
+            area.ondragleave = () => area.classList.remove('dragover');
+            area.ondrop = (e) => { e.preventDefault(); area.classList.remove('dragover'); handleFiles(e.dataTransfer.files); };
+            input.onchange = (e) => handleFiles(e.target.files);
+        }
+        function handleFiles(files) {
+            Array.from(files).forEach(file => {
+                if (file.size > 2 * 1024 * 1024) { alert(file.name + ' 超过 2MB，跳过'); return; }
+                const reader = new FileReader();
+                reader.onload = (e) => { uploadFilesList.push({ name: file.name, type: file.type.startsWith('video') ? 'video' : 'photo', src: e.target.result }); renderPreview(); };
+                reader.readAsDataURL(file);
+            });
+        }
+        function renderPreview() {
+            document.getElementById('previewList').innerHTML = uploadFilesList.map((f, i) => '<div class="preview-item">'+(f.type==='photo'?'<img src="'+f.src+'">':'<video src="'+f.src+'"></video>')+'<button class="preview-remove" onclick="removePreview('+i+')">✕</button></div>').join('');
+        }
+        function removePreview(i) { uploadFilesList.splice(i, 1); renderPreview(); }
+        function openUploadModal(tag) {
+            uploadFilesList = []; uploadTag = tag || '';
+            document.getElementById('previewList').innerHTML = '';
+            document.getElementById('fileInput').value = '';
+            document.getElementById('tagSelect').innerHTML = tags.map(t => '<div class="tag-option'+(t===uploadTag?' selected':'')+'" onclick="selectTag(this,\''+t+'\')">'+t+'</div>').join('');
+            document.getElementById('uploadModal').classList.add('active');
+        }
+        function selectTag(el, tag) { document.querySelectorAll('.tag-option').forEach(t => t.classList.remove('selected')); el.classList.add('selected'); uploadTag = tag; }
+        function doUpload() {
+            if (!uploadFilesList.length) { alert('请先选择文件'); return; }
+            if (!uploadTag) { alert('请选择标签'); return; }
+            uploadFilesList.forEach(f => {
+                mediaData.push({ type: f.type, src: f.src, title: f.name.split('.')[0], desc: '用户上传', cat: uploadTag, time: new Date().toISOString().slice(0, 10) });
+            });
+            saveData(); closeModal('uploadModal'); renderGallery(); renderVideoFilter(); updateStats(); alert('上传成功！');
+        }
+        function closeModal(id) { document.getElementById(id).classList.remove('active'); }
+        
+        function initWeather() {
+            const xhr = new XMLHttpRequest();
+            xhr.open('GET', 'https://wttr.in/?format=j1', true);
+            xhr.timeout = 8000;
+            xhr.onload = function() {
+                if (xhr.status === 200) {
+                    try {
+                        const data = JSON.parse(xhr.responseText);
+                        const c = data.current_condition[0], a = data.nearest_area[0];
+                        const code = parseInt(c.weatherCode);
+                        let icon = '☀️';
+                        if (code >= 119) icon = '☁️'; if (code >= 176) icon = '⛅'; if (code >= 266) icon = '🌧️';
+                        if (code >= 317) icon = '❄️'; if (code >= 200 && code <= 230) icon = '⛈️'; if (code >= 143 && code <= 176) icon = '🌫️';
+                        document.getElementById('weatherIcon').textContent = icon;
+                        document.getElementById('weatherTemp').textContent = c.temp_C + '°C';
+                        document.getElementById('weatherDesc').textContent = c.weatherDesc[0].value;
+                        document.getElementById('weatherLocation').textContent = '📍 ' + a.areaName[0].value;
+                    } catch(e) { setDefaultWeather(); }
+                } else { setDefaultWeather(); }
+            };
+            xhr.onerror = xhr.ontimeout = setDefaultWeather;
+            xhr.send();
+        }
+        function setDefaultWeather() {
+            document.getElementById('weatherIcon').textContent = '🌤️';
+            document.getElementById('weatherTemp').textContent = '--°C';
+            document.getElementById('weatherDesc').textContent = '天气获取失败';
+            document.getElementById('weatherLocation').textContent = '📍 --';
+        }
+        
+        document.addEventListener('keydown', function(e) {
+            if (!document.getElementById('lightbox').classList.contains('active')) return;
+            if (e.key === 'Escape') closeLightbox();
+            if (e.key === 'ArrowLeft') prevMedia();
+            if (e.key === 'ArrowRight') nextMedia();
+        });
+        
+        init();
+        initWeather();
+    </script>
+</body>
+</html>
