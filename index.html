@@ -5,6 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>妞妞的周末日记</title>
     <link href="https://fonts.googleapis.com/css2?family=Noto+Serif+SC:wght@400;700;900&display=swap" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <style>
         :root { --primary: #b87a6b; --accent: #b87a6b; --text: #4a4545; --text-light: #7a7272; --text-muted: #9a9090; }
         * { margin: 0; padding: 0; box-sizing: border-box; }
@@ -396,6 +397,12 @@
             { type:'video', src:'photos/微信视频2026-07-06_004449_851.mp4', title:'闺蜜互动', desc:'开心互动', cat:'日常', time:'2026-07-06' }
         ];
         
+        // Supabase 配置
+        const SUPABASE_URL = 'https://ntfmzfagrhjjsnogltxl.supabase.co';
+        const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im50Zm16ZmFncmhqanNub2dsdHhsIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODM2MDcwNjIsImV4cCI6MjA5OTE4MzA2Mn0.tu5zd60eA5HNGtf5uDb6Ob8D3zMqpTRrJ7N5p4rHvnE';
+        const BUCKET = 'photos';
+        let supabase;
+        
         let tags = JSON.parse(localStorage.getItem('gallery_tags') || '["自拍","风景","游戏","美食","书店","自拍视频","户外","日常"]');
         let mediaData = JSON.parse(localStorage.getItem('gallery_media')) || [...defaultMediaData];
         let currentTag = 'all';
@@ -404,6 +411,7 @@
         let isPlaying = false;
         let uploadFilesList = [];
         let uploadTag = '';
+        let isUploading = false;
         
         const decorTemplates = [
             { cls:'pull-quote', size:'item-9', html:'<div class="pq-mark">"</div><div class="pq-text">摄影是光与影的诗歌<br>每一帧都是故事</div><div class="pq-author">— 影像艺术</div>' },
@@ -431,6 +439,14 @@
         }
         
         function init() {
+            // 初始化 Supabase
+            try {
+                supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+                console.log('Supabase 初始化成功');
+            } catch (e) {
+                console.error('Supabase 初始化失败:', e);
+            }
+            
             renderNav();
             renderGallery();
             initSearch();
@@ -611,7 +627,14 @@
         }
         function prevMedia() { curIdx = (curIdx - 1 + mediaData.length) % mediaData.length; openLightbox(curIdx); }
         function nextMedia() { curIdx = (curIdx + 1) % mediaData.length; openLightbox(curIdx); }
-        function downloadCurrent() { const item = mediaData[curIdx]; const a = document.createElement('a'); a.href = item.src; a.download = item.title; a.click(); }
+        function downloadCurrent() { 
+            const item = mediaData[curIdx]; 
+            const a = document.createElement('a'); 
+            a.href = item.src; 
+            a.download = item.title || 'download';
+            a.target = '_blank';
+            a.click(); 
+        }
         function showInfo() { const item = mediaData[curIdx]; alert('标题：'+item.title+'\n描述：'+item.desc+'\n标签：'+item.cat+'\n时间：'+item.time); }
         
         function initUpload() {
@@ -625,16 +648,34 @@
         }
         function handleFiles(files) {
             Array.from(files).forEach(file => {
-                if (file.size > 2 * 1024 * 1024) { alert(file.name + ' 超过 2MB，跳过'); return; }
+                if (file.size > 50 * 1024 * 1024) { alert(file.name + ' 超过 50MB，跳过'); return; }
+                // 创建本地预览
                 const reader = new FileReader();
-                reader.onload = (e) => { uploadFilesList.push({ name: file.name, type: file.type.startsWith('video') ? 'video' : 'photo', src: e.target.result }); renderPreview(); };
+                reader.onload = (e) => { 
+                    uploadFilesList.push({ 
+                        name: file.name, 
+                        file: file,  // 保存原始文件对象
+                        type: file.type.startsWith('video') ? 'video' : 'photo', 
+                        src: e.target.result,  // 本地预览用
+                        uploaded: false,
+                        url: null
+                    }); 
+                    renderPreview(); 
+                };
                 reader.readAsDataURL(file);
             });
         }
+        
         function renderPreview() {
-            document.getElementById('previewList').innerHTML = uploadFilesList.map((f, i) => '<div class="preview-item">'+(f.type==='photo'?'<img src="'+f.src+'">':'<video src="'+f.src+'"></video>')+'<button class="preview-remove" onclick="removePreview('+i+')">✕</button></div>').join('');
+            document.getElementById('previewList').innerHTML = uploadFilesList.map((f, i) => 
+                '<div class="preview-item">'+(f.type==='photo'?'<img src="'+f.src+'">':'<video src="'+f.src+'"></video>')+
+                (f.uploaded ? '<span style="position:absolute;top:5px;right:5px;background:#2ecc71;color:white;padding:2px 8px;border-radius:10px;font-size:0.7rem;">已上传</span>' : '')+
+                '<button class="preview-remove" onclick="removePreview('+i+')">✕</button></div>'
+            ).join('');
         }
+        
         function removePreview(i) { uploadFilesList.splice(i, 1); renderPreview(); }
+        
         function openUploadModal(tag) {
             uploadFilesList = []; uploadTag = tag || '';
             document.getElementById('previewList').innerHTML = '';
@@ -642,14 +683,66 @@
             document.getElementById('tagSelect').innerHTML = tags.map(t => '<div class="tag-option'+(t===uploadTag?' selected':'')+'" onclick="selectTag(this,\''+t+'\')">'+t+'</div>').join('');
             document.getElementById('uploadModal').classList.add('active');
         }
+        
         function selectTag(el, tag) { document.querySelectorAll('.tag-option').forEach(t => t.classList.remove('selected')); el.classList.add('selected'); uploadTag = tag; }
-        function doUpload() {
+        
+        async function doUpload() {
             if (!uploadFilesList.length) { alert('请先选择文件'); return; }
             if (!uploadTag) { alert('请选择标签'); return; }
-            uploadFilesList.forEach(f => {
-                mediaData.push({ type: f.type, src: f.src, title: f.name.split('.')[0], desc: '用户上传', cat: uploadTag, time: new Date().toISOString().slice(0, 10) });
-            });
-            saveData(); closeModal('uploadModal'); renderGallery(); renderVideoFilter(); updateStats(); alert('上传成功！');
+            if (isUploading) return;
+            
+            isUploading = true;
+            const uploadBtn = document.querySelector('#uploadModal .modal-btn-primary');
+            const originalText = uploadBtn.textContent;
+            uploadBtn.textContent = '上传中...';
+            
+            try {
+                for (let i = 0; i < uploadFilesList.length; i++) {
+                    const f = uploadFilesList[i];
+                    if (f.uploaded) continue; // 跳过已上传的
+                    
+                    const fileName = Date.now() + '_' + f.name;
+                    
+                    // 上传到 Supabase Storage
+                    const { data, error } = await supabase.storage
+                        .from(BUCKET)
+                        .upload(fileName, f.file);
+                    
+                    if (error) throw error;
+                    
+                    // 获取公开URL
+                    const { data: urlData } = supabase.storage
+                        .from(BUCKET)
+                        .getPublicUrl(fileName);
+                    
+                    // 添加到媒体数据
+                    mediaData.push({ 
+                        type: f.type, 
+                        src: urlData.publicUrl, 
+                        title: f.name.split('.')[0], 
+                        desc: '用户上传', 
+                        cat: uploadTag, 
+                        time: new Date().toISOString().slice(0, 10),
+                        cloudFile: fileName  // 记录云端文件名
+                    });
+                    
+                    f.uploaded = true;
+                    f.url = urlData.publicUrl;
+                    renderPreview();
+                }
+                
+                saveData();
+                closeModal('uploadModal');
+                renderGallery();
+                renderVideoFilter();
+                updateStats();
+                alert('上传成功！');
+            } catch (error) {
+                alert('上传失败: ' + error.message);
+            } finally {
+                isUploading = false;
+                uploadBtn.textContent = originalText;
+            }
         }
         function closeModal(id) { document.getElementById(id).classList.remove('active'); }
         
