@@ -16,11 +16,12 @@ export default function MediaDetailPage() {
   const { toast } = useToast();
   const [media, setMedia] = useState<Media | null>(null);
   const [loading, setLoading] = useState(true);
-  const [editing, setEditing] = useState(false);
   const [showEditor, setShowEditor] = useState(false);
   const [caption, setCaption] = useState("");
   const [editTags, setEditTags] = useState<string[]>([]);
   const [allTags, setAllTags] = useState<string[]>([]);
+  const [editingCaption, setEditingCaption] = useState(false);
+  const [dirty, setDirty] = useState(false);
 
   const fetchMedia = useCallback(async () => {
     try {
@@ -30,6 +31,7 @@ export default function MediaDetailPage() {
       setMedia(data);
       setCaption(data.caption ?? "");
       setEditTags(data.tags ?? []);
+      setDirty(false);
     } catch {
       toast("加载失败");
     } finally {
@@ -49,6 +51,12 @@ export default function MediaDetailPage() {
     fetchAllTags();
   }, [fetchMedia, fetchAllTags]);
 
+  // Track dirty state for tags
+  const handleTagsChange = (newTags: string[]) => {
+    setEditTags(newTags);
+    setDirty(true);
+  };
+
   const handleSave = async () => {
     const res = await fetch(`/api/media/${id}`, {
       method: "PATCH",
@@ -57,12 +65,21 @@ export default function MediaDetailPage() {
     });
     if (res.ok) {
       toast("已保存");
-      setEditing(false);
+      setEditingCaption(false);
+      setDirty(false);
       fetchMedia();
       fetchAllTags();
     } else {
       toast("保存失败");
     }
+  };
+
+  const handleCancel = () => {
+    if (!media) return;
+    setEditTags(media.tags ?? []);
+    setCaption(media.caption ?? "");
+    setEditingCaption(false);
+    setDirty(false);
   };
 
   const handleDelete = async () => {
@@ -87,6 +104,16 @@ export default function MediaDetailPage() {
           <span className="header-title">{media.filename}</span>
         </div>
         <div className="header-right">
+          {dirty && (
+            <div style={{ display: "flex", gap: 8 }}>
+              <button className="btn btn-primary btn-sm" onClick={handleSave}>
+                💾 保存
+              </button>
+              <button className="btn btn-ghost btn-sm" onClick={handleCancel}>
+                取消
+              </button>
+            </div>
+          )}
           <DarkModeToggle />
         </div>
       </header>
@@ -121,62 +148,45 @@ export default function MediaDetailPage() {
             <span>{media.type === "video" ? "🎬 视频" : "📷 图片"}</span>
           </div>
 
-          {editing ? (
+          {/* Caption */}
+          {editingCaption ? (
             <div style={{ marginBottom: 16 }}>
               <input
                 className="input"
-                placeholder="描述"
+                placeholder="输入描述..."
                 value={caption}
-                onChange={(e) => setCaption(e.target.value)}
-                style={{ marginBottom: 12 }}
+                onChange={(e) => {
+                  setCaption(e.target.value);
+                  setDirty(true);
+                }}
+                onKeyDown={(e) => {
+                  if (e.key === "Enter") handleSave();
+                  if (e.key === "Escape") handleCancel();
+                }}
+                autoFocus
               />
-              <div style={{ marginBottom: 12 }}>
-                <label className="editor-label">标签</label>
-                <TagEditor
-                  tags={editTags}
-                  allTags={allTags}
-                  onChange={setEditTags}
-                />
-              </div>
-              <div style={{ display: "flex", gap: 8 }}>
-                <button className="btn btn-primary btn-sm" onClick={handleSave}>
-                  保存
-                </button>
-                <button className="btn btn-ghost btn-sm" onClick={() => {
-                  setEditing(false);
-                  setEditTags(media.tags ?? []);
-                  setCaption(media.caption ?? "");
-                }}>
-                  取消
-                </button>
-              </div>
             </div>
           ) : (
-            <>
-              {media.caption && <p className="detail-caption">{media.caption}</p>}
-              {media.tags.length > 0 && (
-                <div className="detail-tags">
-                  {media.tags.map((t) => (
-                    <Link key={t} href={`/tags/${encodeURIComponent(t)}`} className="tag">
-                      {t}
-                    </Link>
-                  ))}
-                </div>
-              )}
-            </>
+            <p
+              className="detail-caption"
+              onClick={() => setEditingCaption(true)}
+              style={{ cursor: "pointer", minHeight: 24 }}
+              title="点击编辑描述"
+            >
+              {media.caption || <span style={{ color: "var(--text-secondary)", opacity: 0.5 }}>点击添加描述...</span>}
+            </p>
           )}
 
+          {/* Tags - always editable */}
+          <div style={{ marginBottom: 20 }}>
+            <TagEditor
+              tags={editTags}
+              allTags={allTags}
+              onChange={handleTagsChange}
+            />
+          </div>
+
           <div className="detail-actions">
-            <button
-              className="btn btn-ghost btn-sm"
-              onClick={() => {
-                setEditTags(media.tags ?? []);
-                setCaption(media.caption ?? "");
-                setEditing(!editing);
-              }}
-            >
-              ✏️ 编辑信息
-            </button>
             {media.type === "photo" && (
               <button
                 className="btn btn-ghost btn-sm"
