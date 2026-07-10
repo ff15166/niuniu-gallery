@@ -1,0 +1,212 @@
+/* === Magazine Decoration Elements === */
+
+/* 1. 首字母下沉 */
+.deco-initial::first-letter {
+  font-size: 3em;
+  float: left;
+  line-height: 1;
+  margin-right: 8px;
+  font-weight: 700;
+  color: var(--accent);
+}
+
+/* 2. 斜体标题 */
+.deco-italic {
+  font-style: italic;
+  font-weight: 300;
+  letter-spacing: 0.02em;
+}
+
+/* 3. 胶片边框 */
+.deco-filmstrip {
+  position: relative;
+  padding: 12px 0;
+}
+
+.deco-filmstrip::before,
+.deco-filmstrip::after {
+  content: '';
+  position: absolute;
+  left: 0; right: 0;
+  height: 12px;
+  background: repeating-linear-gradient(
+    90deg,
+    var(--accent) 0, var(--accent) 8px,
+    transparent 8px, transparent 16px
+  );
+  opacity: 0.15;
+}
+
+.deco-filmstrip::before { top: 0; }
+.deco-filmstrip::after { bottom: 0; }
+
+/* 4. 艺术边框 */
+.deco-art-border {
+  border: 2px solid var(--accent);
+  padding: 16px;
+  position: relative;
+}
+
+.deco-art-border::before {
+  content: '';
+  position: absolute;
+  inset: 4px;
+  border: 1px solid var(--accent);
+  opacity: 0.3;
+  pointer-events: none;
+}
+
+/* 5. 撕纸效果 */
+.deco-torn {
+  clip-path: polygon(
+    0% 0%, 100% 0%, 100% 85%,
+    95% 88%, 90% 85%, 85% 90%, 80% 87%,
+    75% 92%, 70% 88%, 65% 91%, 60% 86%,
+    55% 90%, 50% 87%, 45% 92%, 40% 88%,
+    35% 91%, 30% 86%, 25% 90%, 20% 87%,
+    15% 92%, 10% 88%, 5% 91%, 0% 88%
+  );
+}
+
+/* 6. 渐变叠加 */
+.deco-gradient-overlay {
+  position: relative;
+}
+
+.deco-gradient-overlay::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(
+    135deg,
+    rgba(0,0,0,0.3) 0%,
+    transparent 50%,
+    rgba(255,255,255,0.1) 100%
+  );
+  pointer-events: none;
+}
+
+/* 7. 圆形裁剪 */
+.deco-circle {
+  border-radius: 50%;
+  overflow: hidden;
+  aspect-ratio: 1;
+}
+
+/* 8. 偏移阴影 */
+.deco-offset-shadow {
+  position: relative;
+}
+
+.deco-offset-shadow::after {
+  content: '';
+  position: absolute;
+  inset: 8px -8px -8px 8px;
+  background: var(--accent);
+  opacity: 0.1;
+  z-index: -1;
+  border-radius: var(--radius);
+}
+
+/* 9. 极坐标效果 */
+.deco-polaroid {
+  background: white;
+  padding: 8px 8px 32px;
+  box-shadow: var(--shadow-md);
+  transform: rotate(-2deg);
+}
+
+[data-theme="dark"] .deco-polaroid {
+  background: var(--bg-card);
+}
+
+/* 10. 拼贴效果 */
+.deco-collage {
+  transform: rotate(1deg);
+  transition: transform 0.3s ease;
+}
+
+.deco-collage:hover {
+  transform: rotate(0deg) scale(1.02);
+}
+
+/* 11. 引用框 */
+.deco-quote {
+  border-left: 3px solid var(--accent);
+  padding-left: 16px;
+  font-style: italic;
+  color: var(--text-secondary);
+}
+
+/* 12. 分割线装饰 */
+.deco-divider {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  color: var(--text-secondary);
+  font-size: 12px;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+}
+
+.deco-divider::before,
+.deco-divider::after {
+  content: '';
+  flex: 1;
+  height: 1px;
+  background: var(--border-color);
+}
+
+/* 13. 标签徽章 */
+.deco-badge {
+  position: relative;
+}
+
+.deco-badge::after {
+  content: attr(data-badge);
+  position: absolute;
+  top: -6px;
+  right: -6px;
+  background: #ef4444;
+  color: white;
+  font-size: 10px;
+  font-weight: 700;
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* 14. 渐变文字 */
+.deco-gradient-text {
+  background: linear-gradient(135deg, var(--accent) 0%, var(--text-secondary) 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+/* 15. 模糊背景 */
+.deco-blur-bg {
+  backdrop-filter: blur(10px);
+  background: rgba(255,255,255,0.8);
+}
+
+[data-theme="dark"] .deco-blur-bg {
+  background: rgba(0,0,0,0.8);
+}
+
+/* 16. 复古滤镜 */
+.deco-vintage {
+  filter: sepia(0.3) contrast(1.1) brightness(0.95);
+}
+
+/* 17. 放大镜效果 */
+.deco-magnify {
+  transition: transform 0.3s ease;
+}
+
+.deco-magnify:hover {
+  transform: scale(1.05);
+}
