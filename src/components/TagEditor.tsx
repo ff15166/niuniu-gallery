@@ -100,7 +100,7 @@ export default function TagEditor({ tags, allTags, onChange, compact }: TagEdito
             onFocus={() => setShowDropdown(true)}
             onKeyDown={handleKeyDown}
           />
-          {showDropdown && filtered.length > 0 && (
+          {showDropdown && (filtered.length > 0 || (input.trim() && !allTags.includes(input.trim()))) && (
             <div className="tag-editor-dropdown" ref={dropdownRef}>
               {filtered.map((tag, i) => (
                 <div
