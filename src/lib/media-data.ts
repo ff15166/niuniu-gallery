@@ -109,3 +109,117 @@ export async function deleteManyMedia(ids: string[]): Promise<number> {
   }
   return total;
 }
+
+// === Tag CRUD ===
+
+/** Get all tags from the dedicated tags table */
+export async function getAllTags(): Promise<string[]> {
+  const result = await db.execute("SELECT name FROM tags ORDER BY name");
+  return result.rows.map((r) => r.name as string);
+}
+
+/** Create a tag in the tags table */
+export async function createTag(name: string): Promise<boolean> {
+  try {
+    await db.execute({
+      sql: "INSERT OR IGNORE INTO tags (name) VALUES (?)",
+      args: [name],
+    });
+    return true;
+  } catch {
+    return false;
+  }
+}
+
+/** Delete a tag from tags table AND remove it from all media */
+export async function deleteTag(name: string): Promise<number> {
+  // Remove from all media
+  const result = await db.execute({
+    sql: "SELECT id, tags FROM media WHERE tags LIKE ?",
+    args: [`%"${name}"%`],
+  });
+  let affected = 0;
+  for (const row of result.rows) {
+    const tags: string[] = JSON.parse(row.tags as string || "[]");
+    const filtered = tags.filter((t) => t !== name);
+    if (filtered.length !== tags.length) {
+      await db.execute({
+        sql: "UPDATE media SET tags = ?, updated_at = datetime('now') WHERE id = ?",
+        args: [JSON.stringify(filtered), row.id as string],
+      });
+      affected++;
+    }
+  }
+  // Remove from tags table
+  await db.execute({ sql: "DELETE FROM tags WHERE name = ?", args: [name] });
+  return affected;
+}
+
+/** Rename a tag everywhere */
+export async function renameTag(oldName: string, newName: string): Promise<number> {
+  const result = await db.execute({
+    sql: "SELECT id, tags FROM media WHERE tags LIKE ?",
+    args: [`%"${oldName}"%`],
+  });
+  let affected = 0;
+  for (const row of result.rows) {
+    const tags: string[] = JSON.parse(row.tags as string || "[]");
+    const updated = tags.map((t) => (t === oldName ? newName : t));
+    await db.execute({
+      sql: "UPDATE media SET tags = ?, updated_at = datetime('now') WHERE id = ?",
+      args: [JSON.stringify(updated), row.id as string],
+    });
+    affected++;
+  }
+  await db.execute({
+    sql: "UPDATE tags SET name = ? WHERE name = ?",
+    args: [newName, oldName],
+  });
+  return affected;
+}
+
+/** Add a tag to multiple media items */
+export async function addTagToMedia(mediaIds: string[], tag: string): Promise<number> {
+  let affected = 0;
+  for (const id of mediaIds) {
+    const result = await db.execute({
+      sql: "SELECT tags FROM media WHERE id = ?",
+      args: [id],
+    });
+    if (result.rows[0]) {
+      const tags: string[] = JSON.parse(result.rows[0].tags as string || "[]");
+      if (!tags.includes(tag)) {
+        tags.push(tag);
+        await db.execute({
+          sql: "UPDATE media SET tags = ?, updated_at = datetime('now') WHERE id = ?",
+          args: [JSON.stringify(tags), id],
+        });
+        affected++;
+      }
+    }
+  }
+  return affected;
+}
+
+/** Remove a tag from multiple media items */
+export async function removeTagFromMedia(mediaIds: string[], tag: string): Promise<number> {
+  let affected = 0;
+  for (const id of mediaIds) {
+    const result = await db.execute({
+      sql: "SELECT tags FROM media WHERE id = ?",
+      args: [id],
+    });
+    if (result.rows[0]) {
+      const tags: string[] = JSON.parse(result.rows[0].tags as string || "[]");
+      const filtered = tags.filter((t) => t !== tag);
+      if (filtered.length !== tags.length) {
+        await db.execute({
+          sql: "UPDATE media SET tags = ?, updated_at = datetime('now') WHERE id = ?",
+          args: [JSON.stringify(filtered), id],
+        });
+        affected++;
+      }
+    }
+  }
+  return affected;
+}

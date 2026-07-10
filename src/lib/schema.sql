@@ -18,3 +18,8 @@ CREATE TABLE IF NOT EXISTS media (
 
 CREATE INDEX IF NOT EXISTS idx_media_type ON media(type);
 CREATE INDEX IF NOT EXISTS idx_media_created_at ON media(created_at DESC);
+
+CREATE TABLE IF NOT EXISTS tags (
+  name TEXT PRIMARY KEY,
+  created_at TEXT DEFAULT (datetime('now'))
+);
