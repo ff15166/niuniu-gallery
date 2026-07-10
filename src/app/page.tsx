@@ -82,10 +82,11 @@ export default function HomePage() {
     setFiltered(result);
   }, [media, activeTag, searchQuery, dateFrom, dateTo]);
 
-  const handleUpload = async (files: File[]) => {
+  const handleUpload = async (files: File[], tags: string[] = []) => {
     for (const file of files) {
       const fd = new FormData();
       fd.append("file", file);
+      if (tags.length > 0) fd.append("tags", JSON.stringify(tags));
       const res = await fetch("/api/upload", { method: "POST", body: fd });
       if (!res.ok) {
         const err = await res.json().catch(() => ({ error: "上传失败" }));

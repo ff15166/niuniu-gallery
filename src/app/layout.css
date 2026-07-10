@@ -350,6 +350,7 @@
   border-bottom: var(--border-thick);
   overflow: hidden;
   position: relative;
+  background: var(--bg-secondary);
 }
 
 .grid-col-2 { grid-column: span 2; }
