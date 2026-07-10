@@ -36,9 +36,6 @@
   --overlay: rgba(0,0,0,0.75);
 }
 
-/* === Fonts === */
-@import url('https://fonts.googleapis.com/css2?family=Noto+Serif+SC:wght@400;600;700&display=swap');
-
 /* === Reset & Base === */
 * { margin: 0; padding: 0; box-sizing: border-box; }
 

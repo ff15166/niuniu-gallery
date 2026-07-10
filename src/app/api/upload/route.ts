@@ -1,6 +1,11 @@
 import { NextResponse } from "next/server";
 import { ensureDb } from "@/lib/ensure-db";
 import { createMedia } from "@/lib/media-data";
+import {
+  generateVideoThumbnail,
+  extractVideoFrame,
+  generateCaption,
+} from "@/lib/caption";
 
 export async function POST(request: Request) {
   try {
@@ -14,7 +19,6 @@ export async function POST(request: Request) {
       try {
         tags = JSON.parse(tagsRaw);
       } catch {
-        // Fallback: comma-separated string
         tags = tagsRaw.split(",").map((t) => t.trim()).filter(Boolean);
       }
     }
@@ -33,12 +37,11 @@ export async function POST(request: Request) {
       );
     }
 
-    // For local dev: save to public/uploads/
-    // For production: use Vercel Blob
     let originalUrl: string;
     let thumbnailUrl: string | undefined;
     let width: number | undefined;
     let height: number | undefined;
+    let localFilePath: string | undefined;
 
     if (process.env.BLOB_READ_WRITE_TOKEN) {
       // Production: Vercel Blob
@@ -77,10 +80,19 @@ export async function POST(request: Request) {
       const ext = file.name.split(".").pop() ?? "bin";
       const safeName = `${Date.now()}-${Math.random().toString(36).slice(2)}.${ext}`;
       const buffer = Buffer.from(await file.arrayBuffer());
-      writeFileSync(join(uploadsDir, safeName), buffer);
+      const filePath = join(uploadsDir, safeName);
+      writeFileSync(filePath, buffer);
+      localFilePath = filePath;
       originalUrl = `/uploads/${safeName}`;
 
-      if (!isVideo) {
+      if (isVideo) {
+        // Generate video thumbnail using ffmpeg
+        const thumbName = `thumb-${safeName.replace(/\.\w+$/, ".jpg")}`;
+        const thumbPath = join(uploadsDir, thumbName);
+        if (generateVideoThumbnail(filePath, thumbPath)) {
+          thumbnailUrl = `/uploads/${thumbName}`;
+        }
+      } else {
         try {
           const sharp = (await import("sharp")).default;
           const metadata = await sharp(buffer).metadata();
@@ -100,6 +112,37 @@ export async function POST(request: Request) {
       }
     }
 
+    // Auto-generate caption if not provided
+    let autoCaption: string | undefined = caption;
+    if (!autoCaption) {
+      try {
+        let generated: string | null = null;
+        if (isVideo && localFilePath) {
+          // Extract a frame from the video, then caption it
+          const framePath = extractVideoFrame(localFilePath);
+          if (framePath) {
+            generated = await generateCaption(framePath, true);
+            // Cleanup temp frame
+            try {
+              const { unlinkSync } = await import("fs");
+              unlinkSync(framePath);
+            } catch {}
+          }
+        } else if (!isVideo) {
+          // For photos in local dev, use the local file
+          if (localFilePath) {
+            generated = await generateCaption(localFilePath, true);
+          } else if (originalUrl.startsWith("http")) {
+            generated = await generateCaption(originalUrl, false);
+          }
+        }
+        if (generated) autoCaption = generated;
+      } catch (err) {
+        console.error("Auto-caption failed:", err);
+        // Continue without caption
+      }
+    }
+
     const media = await createMedia({
       filename: file.name,
       original_url: originalUrl,
@@ -108,7 +151,7 @@ export async function POST(request: Request) {
       size: file.size,
       width,
       height,
-      caption,
+      caption: autoCaption,
       tags,
     });
 
