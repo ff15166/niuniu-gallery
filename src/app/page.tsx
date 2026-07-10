@@ -93,6 +93,14 @@ export default function HomePage() {
         toast(err.error ?? "上传失败");
         continue;
       }
+      // Sync tags to tags table
+      for (const tag of tags) {
+        await fetch("/api/tags", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ action: "create", name: tag }),
+        }).catch(() => {});
+      }
       toast(`已上传 ${file.name}`);
     }
     fetchMedia();

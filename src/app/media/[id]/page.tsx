@@ -64,6 +64,14 @@ export default function MediaDetailPage() {
       body: JSON.stringify({ caption, tags: editTags }),
     });
     if (res.ok) {
+      // Sync new tags to tags table
+      for (const tag of editTags) {
+        await fetch("/api/tags", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ action: "create", name: tag }),
+        }).catch(() => {});
+      }
       toast("已保存");
       setEditingCaption(false);
       setDirty(false);
