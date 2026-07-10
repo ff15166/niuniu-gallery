@@ -1,18 +1,19 @@
 "use client";
 
-import { useEffect, useState, useCallback, useMemo } from "react";
+import { useEffect, useState, useCallback } from "react";
 import type { Media } from "@/lib/types";
 import Hero from "@/components/Hero";
-import SearchBar from "@/components/SearchBar";
 import TagManager from "@/components/TagManager";
-import PhotoGrid from "@/components/PhotoGrid";
+import MagazineGrid from "@/components/MagazineGrid";
 import Skeleton from "@/components/Skeleton";
 import UploadZone from "@/components/UploadZone";
 import Lightbox from "@/components/Lightbox";
 import BottomHero from "@/components/BottomHero";
+import Footer from "@/components/Footer";
+import BottomBar from "@/components/BottomBar";
 import BulkToolbar from "@/components/BulkToolbar";
 import Weather from "@/components/Weather";
-import BackgroundMusic from "@/components/BackgroundMusic";
+import DarkModeToggle from "@/components/DarkModeToggle";
 import { useToast } from "@/components/Toast";
 
 export default function HomePage() {
@@ -28,6 +29,7 @@ export default function HomePage() {
   const [searchQuery, setSearchQuery] = useState("");
   const [dateFrom, setDateFrom] = useState("");
   const [dateTo, setDateTo] = useState("");
+  const [showDecorations, setShowDecorations] = useState(true);
   const { toast } = useToast();
 
   const fetchMedia = useCallback(async () => {
@@ -55,25 +57,10 @@ export default function HomePage() {
     fetchTags();
   }, [fetchMedia, fetchTags]);
 
-  // Compute tag counts from media
-  const tagCounts = useMemo(() => {
-    const counts: Record<string, number> = {};
-    for (const m of media) {
-      for (const t of m.tags) {
-        counts[t] = (counts[t] || 0) + 1;
-      }
-    }
-    return counts;
-  }, [media]);
-
-  // Apply filters whenever media, activeTag, search, or dates change
+  // Apply filters
   useEffect(() => {
     let result = [...media];
-
-    if (activeTag) {
-      result = result.filter((m) => m.tags.includes(activeTag));
-    }
-
+    if (activeTag) result = result.filter((m) => m.tags.includes(activeTag));
     if (searchQuery) {
       const q = searchQuery.toLowerCase();
       result = result.filter(
@@ -83,29 +70,17 @@ export default function HomePage() {
           m.tags.some((t) => t.toLowerCase().includes(q))
       );
     }
-
     if (dateFrom) {
       const from = new Date(dateFrom);
       result = result.filter((m) => new Date(m.created_at) >= from);
     }
-
     if (dateTo) {
       const to = new Date(dateTo);
       to.setHours(23, 59, 59, 999);
       result = result.filter((m) => new Date(m.created_at) <= to);
     }
-
     setFiltered(result);
   }, [media, activeTag, searchQuery, dateFrom, dateTo]);
-
-  const handleSearch = useCallback(
-    (query: string, from: string, to: string) => {
-      setSearchQuery(query);
-      setDateFrom(from);
-      setDateTo(to);
-    },
-    []
-  );
 
   const handleUpload = async (files: File[]) => {
     for (const file of files) {
@@ -179,72 +154,97 @@ export default function HomePage() {
     });
   };
 
-  const handleSelectAll = () => {
-    setSelectedIds(new Set(filtered.map((m) => m.id)));
-  };
-
+  const handleSelectAll = () => setSelectedIds(new Set(filtered.map((m) => m.id)));
   const handleInvert = () => {
     setSelectedIds((prev) => {
       const next = new Set<string>();
-      filtered.forEach((m) => {
-        if (!prev.has(m.id)) next.add(m.id);
-      });
+      filtered.forEach((m) => { if (!prev.has(m.id)) next.add(m.id); });
       return next;
     });
   };
 
   return (
     <div className="app-layout">
+      {/* Header */}
       <header className="header">
         <div className="header-left">
-          <button className="btn btn-ghost" onClick={() => setShowUpload(!showUpload)}>
-            📤 上传
-          </button>
-          <button
-            className={`btn btn-ghost ${selectMode ? "active" : ""}`}
-            onClick={() => {
-              setSelectMode(!selectMode);
-              if (selectMode) setSelectedIds(new Set());
-            }}
-          >
-            ☑️ 选择
-          </button>
+          <span style={{ fontSize: 18 }}>📸</span>
+          <span className="header-title">妞妞画廊</span>
         </div>
         <div className="header-right">
           <Weather />
-          <BackgroundMusic />
+          <DarkModeToggle />
         </div>
       </header>
 
       <main className="main-content">
         <Hero />
-        <SearchBar onSearch={handleSearch} />
+
+        {/* Section Header with Search */}
+        <div className="section-header">
+          <h2 className="section-title">精选照片</h2>
+          <div className="section-controls">
+            <div className="search-input-wrap">
+              <span className="search-icon">🔍</span>
+              <input
+                className="search-input"
+                placeholder="搜索..."
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+              />
+              {searchQuery && (
+                <button className="search-clear" onClick={() => setSearchQuery("")}>✕</button>
+              )}
+            </div>
+            <div className="search-dates">
+              <input
+                type="date"
+                className="input search-date"
+                value={dateFrom}
+                onChange={(e) => setDateFrom(e.target.value)}
+              />
+              <span className="search-date-sep">至</span>
+              <input
+                type="date"
+                className="input search-date"
+                value={dateTo}
+                onChange={(e) => setDateTo(e.target.value)}
+              />
+            </div>
+          </div>
+        </div>
+
+        {/* Tags */}
         <TagManager
           tags={tags}
           activeTag={activeTag}
           onSelect={setActiveTag}
-          onRefresh={() => {
-            fetchMedia();
-            fetchTags();
-          }}
+          onRefresh={() => { fetchMedia(); fetchTags(); }}
         />
 
+        {/* Upload Zone */}
         {showUpload && <UploadZone onUpload={handleUpload} />}
 
+        {/* Magazine Grid */}
         {loading ? (
           <Skeleton count={8} />
         ) : (
-          <PhotoGrid
+          <MagazineGrid
             media={filtered}
             selectable={selectMode}
             selectedIds={selectedIds}
             onSelect={handleSelect}
+            showDecorations={showDecorations}
           />
         )}
 
+        {/* Bottom Hero */}
         {!loading && filtered.length > 0 && <BottomHero />}
       </main>
 
+      <Footer />
+
+      {/* Lightbox */}
       {lightboxIdx !== null && (
         <Lightbox
           media={filtered}
@@ -254,6 +254,17 @@ export default function HomePage() {
         />
       )}
 
+      {/* Bottom Bar */}
+      <BottomBar
+        onUpload={() => setShowUpload(!showUpload)}
+        onSelectMode={() => {
+          setSelectMode(!selectMode);
+          if (selectMode) setSelectedIds(new Set());
+        }}
+        selectMode={selectMode}
+      />
+
+      {/* Bulk Toolbar */}
       <BulkToolbar
         count={selectedIds.size}
         total={filtered.length}

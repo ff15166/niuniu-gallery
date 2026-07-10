@@ -51,7 +51,7 @@ export default function Hero() {
       <div className="hero-content">
         <div className="hero-subtitle">Photo Gallery</div>
         <h1 className="hero-title">
-          用镜头记录<br /><span className="hero-highlight">天才少女</span>生活的美好
+          用镜头记录<br /><span className="hero-highlight">妞妞</span>生活的美好
         </h1>
         <div className="hero-title-line">
           <div className="hero-title-dot"></div>
