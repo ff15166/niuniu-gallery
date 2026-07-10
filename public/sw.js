@@ -1,4 +1,4 @@
-const CACHE_NAME = "niuniu-gallery-v1";
+const CACHE_NAME = "niuniu-gallery-v2";
 const STATIC_ASSETS = [
   "/",
   "/manifest.json",
@@ -73,13 +73,24 @@ self.addEventListener("fetch", (event) => {
   // Static: stale-while-revalidate
   event.respondWith(
     caches.match(request).then((cached) => {
-      const fetchPromise = fetch(request).then((res) => {
-        if (res.ok) {
-          const clone = res.clone();
-          caches.open(CACHE_NAME).then((cache) => cache.put(request, clone));
-        }
-        return res;
-      });
+      const fetchPromise = fetch(request)
+        .then((res) => {
+          if (res.ok) {
+            const clone = res.clone();
+            caches.open(CACHE_NAME).then((cache) => cache.put(request, clone));
+          }
+          return res;
+        })
+        .catch(() => {
+          // Network failed and no cache — return a basic offline response
+          if (request.destination === "document") {
+            return new Response("离线状态", {
+              status: 503,
+              headers: { "Content-Type": "text/plain; charset=utf-8" },
+            });
+          }
+          return new Response("", { status: 503 });
+        });
       return cached || fetchPromise;
     })
   );
