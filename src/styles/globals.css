@@ -1,38 +1,43 @@
+@import url('https://fonts.googleapis.com/css2?family=Noto+Serif+SC:wght@400;600;700&display=swap');
+
 /* === CSS Variables === */
 :root {
-  --bg-primary: #ffffff;
-  --bg-secondary: #f8f8f8;
+  --bg-primary: #f0ece8;
+  --bg-secondary: #e8e2dc;
   --bg-card: #ffffff;
-  --text-primary: #1a1a1a;
-  --text-secondary: #666666;
-  --border-color: #e5e5e5;
-  --accent: #000000;
-  --accent-hover: #333333;
-  --shadow-sm: 0 1px 2px rgba(0,0,0,0.05);
-  --shadow-md: 0 4px 6px rgba(0,0,0,0.07);
-  --shadow-lg: 0 10px 25px rgba(0,0,0,0.1);
+  --text-primary: #3d3935;
+  --text-secondary: #6b5e57;
+  --border-color: #d4cbc3;
+  --accent: #b87a6b;
+  --accent-hover: #a0685a;
+  --shadow-sm: 0 1px 3px rgba(0,0,0,0.06);
+  --shadow-md: 0 4px 8px rgba(0,0,0,0.08);
+  --shadow-lg: 0 12px 28px rgba(0,0,0,0.12);
   --radius: 8px;
   --sidebar-width: 240px;
   --header-height: 56px;
   --transition: 0.2s ease;
-  --overlay: rgba(0,0,0,0.5);
+  --overlay: rgba(0,0,0,0.55);
   --grid-columns: 12;
 }
 
 [data-theme="dark"] {
-  --bg-primary: #0a0a0a;
-  --bg-secondary: #111111;
-  --bg-card: #1a1a1a;
-  --text-primary: #e5e5e5;
-  --text-secondary: #999999;
-  --border-color: #2a2a2a;
-  --accent: #ffffff;
-  --accent-hover: #cccccc;
-  --shadow-sm: 0 1px 2px rgba(0,0,0,0.3);
-  --shadow-md: 0 4px 6px rgba(0,0,0,0.4);
-  --shadow-lg: 0 10px 25px rgba(0,0,0,0.5);
-  --overlay: rgba(0,0,0,0.8);
+  --bg-primary: #1a1614;
+  --bg-secondary: #241f1c;
+  --bg-card: #2d2724;
+  --text-primary: #e8ddd6;
+  --text-secondary: #a89890;
+  --border-color: #3d3530;
+  --accent: #d4927f;
+  --accent-hover: #c07a68;
+  --shadow-sm: 0 1px 3px rgba(0,0,0,0.3);
+  --shadow-md: 0 4px 8px rgba(0,0,0,0.4);
+  --shadow-lg: 0 12px 28px rgba(0,0,0,0.5);
+  --overlay: rgba(0,0,0,0.75);
 }
+
+/* === Fonts === */
+@import url('https://fonts.googleapis.com/css2?family=Noto+Serif+SC:wght@400;600;700&display=swap');
 
 /* === Reset & Base === */
 * { margin: 0; padding: 0; box-sizing: border-box; }
@@ -43,7 +48,7 @@ html {
 }
 
 body {
-  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  font-family: 'Noto Serif SC', Georgia, serif;
   background: var(--bg-primary);
   color: var(--text-primary);
   line-height: 1.6;

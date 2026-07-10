@@ -3,7 +3,10 @@
 import { useEffect, useState, useCallback } from "react";
 import type { Media } from "@/lib/types";
 import TagSidebar from "@/components/TagSidebar";
+import Hero from "@/components/Hero";
+import SearchBar from "@/components/SearchBar";
 import PhotoGrid from "@/components/PhotoGrid";
+import Skeleton from "@/components/Skeleton";
 import UploadZone from "@/components/UploadZone";
 import Lightbox from "@/components/Lightbox";
 import BulkToolbar from "@/components/BulkToolbar";
@@ -13,6 +16,7 @@ import { useToast } from "@/components/Toast";
 
 export default function HomePage() {
   const [media, setMedia] = useState<Media[]>([]);
+  const [filtered, setFiltered] = useState<Media[]>([]);
   const [tags, setTags] = useState<string[]>([]);
   const [loading, setLoading] = useState(true);
   const [lightboxIdx, setLightboxIdx] = useState<number | null>(null);
@@ -23,9 +27,11 @@ export default function HomePage() {
 
   const fetchMedia = useCallback(async () => {
     try {
-      const res = await fetch("/api/media");
+      const res = await fetch("/api/media?limit=500");
       if (!res.ok) throw new Error("Failed");
-      setMedia(await res.json());
+      const data = await res.json();
+      setMedia(data);
+      setFiltered(data);
     } catch {
       toast("加载失败");
     } finally {
@@ -44,6 +50,36 @@ export default function HomePage() {
     fetchMedia();
     fetchTags();
   }, [fetchMedia, fetchTags]);
+
+  const handleSearch = useCallback(
+    (query: string, dateFrom: string, dateTo: string) => {
+      let result = [...media];
+
+      if (query) {
+        const q = query.toLowerCase();
+        result = result.filter(
+          (m) =>
+            m.filename.toLowerCase().includes(q) ||
+            m.caption?.toLowerCase().includes(q) ||
+            m.tags.some((t) => t.toLowerCase().includes(q))
+        );
+      }
+
+      if (dateFrom) {
+        const from = new Date(dateFrom);
+        result = result.filter((m) => new Date(m.created_at) >= from);
+      }
+
+      if (dateTo) {
+        const to = new Date(dateTo);
+        to.setHours(23, 59, 59, 999);
+        result = result.filter((m) => new Date(m.created_at) <= to);
+      }
+
+      setFiltered(result);
+    },
+    [media]
+  );
 
   const handleUpload = async (files: File[]) => {
     for (const file of files) {
@@ -107,13 +143,16 @@ export default function HomePage() {
       </header>
 
       <main className="main-content">
+        <Hero />
+        <SearchBar onSearch={handleSearch} />
+
         {showUpload && <UploadZone onUpload={handleUpload} />}
 
         {loading ? (
-          <div className="empty-state">加载中...</div>
+          <Skeleton count={8} />
         ) : (
           <PhotoGrid
-            media={media}
+            media={filtered}
             selectable={selectMode}
             selectedIds={selectedIds}
             onSelect={handleSelect}
@@ -123,7 +162,7 @@ export default function HomePage() {
 
       {lightboxIdx !== null && (
         <Lightbox
-          media={media}
+          media={filtered}
           index={lightboxIdx}
           onClose={() => setLightboxIdx(null)}
           onNavigate={setLightboxIdx}
