@@ -3,6 +3,7 @@
 import Image from "next/image";
 import Link from "next/link";
 import { useState } from "react";
+import VideoThumbnail from "./VideoThumbnail";
 import type { Media } from "@/lib/types";
 
 interface MediaCardProps {
@@ -59,14 +60,21 @@ export default function MediaCard({
         <div className="media-card-image">
           {media.type === "video" ? (
             <div className="video-thumb">
-              <Image
-                src={src}
-                alt={media.caption ?? media.filename}
-                fill
-                sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
-                style={{ objectFit: "cover" }}
-                onError={() => setImgError(true)}
-              />
+              {media.thumbnail_url ? (
+                <Image
+                  src={media.thumbnail_url}
+                  alt={media.caption ?? media.filename}
+                  fill
+                  sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
+                  style={{ objectFit: "cover" }}
+                  onError={() => setImgError(true)}
+                />
+              ) : (
+                <VideoThumbnail
+                  src={media.original_url}
+                  alt={media.caption ?? media.filename}
+                />
+              )}
               <span className="video-play-icon">▶</span>
             </div>
           ) : (

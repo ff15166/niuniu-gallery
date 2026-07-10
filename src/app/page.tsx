@@ -117,6 +117,20 @@ export default function HomePage() {
     });
   };
 
+  const handleSelectAll = () => {
+    setSelectedIds(new Set(filtered.map((m) => m.id)));
+  };
+
+  const handleInvert = () => {
+    setSelectedIds((prev) => {
+      const next = new Set<string>();
+      filtered.forEach((m) => {
+        if (!prev.has(m.id)) next.add(m.id);
+      });
+      return next;
+    });
+  };
+
   return (
     <div className="app-layout">
       <TagSidebar tags={tags} />
@@ -171,9 +185,12 @@ export default function HomePage() {
 
       <BulkToolbar
         count={selectedIds.size}
+        total={filtered.length}
         onDelete={handleDeleteSelected}
         onTag={() => toast("标签编辑功能开发中")}
         onClear={() => setSelectedIds(new Set())}
+        onSelectAll={handleSelectAll}
+        onInvert={handleInvert}
       />
     </div>
   );
