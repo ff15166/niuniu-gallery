@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState, useCallback } from "react";
+import { useEffect, useState, useCallback, useMemo } from "react";
 import type { Media } from "@/lib/types";
 import TagSidebar from "@/components/TagSidebar";
 import Hero from "@/components/Hero";
@@ -55,6 +55,17 @@ export default function HomePage() {
     fetchMedia();
     fetchTags();
   }, [fetchMedia, fetchTags]);
+
+  // Compute tag counts from media
+  const tagCounts = useMemo(() => {
+    const counts: Record<string, number> = {};
+    for (const m of media) {
+      for (const t of m.tags) {
+        counts[t] = (counts[t] || 0) + 1;
+      }
+    }
+    return counts;
+  }, [media]);
 
   // Apply filters whenever media, activeTag, search, or dates change
   useEffect(() => {
@@ -124,6 +135,42 @@ export default function HomePage() {
     fetchMedia();
   };
 
+  const handleBulkTagAdd = async (tag: string) => {
+    const ids = Array.from(selectedIds);
+    try {
+      const res = await fetch("/api/tags", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ action: "addToMedia", tag, mediaIds: ids }),
+      });
+      if (!res.ok) throw new Error();
+      const data = await res.json();
+      toast(`已为 ${data.affected} 项添加标签「${tag}」`);
+      fetchMedia();
+      fetchTags();
+    } catch {
+      toast("操作失败");
+    }
+  };
+
+  const handleBulkTagRemove = async (tag: string) => {
+    const ids = Array.from(selectedIds);
+    try {
+      const res = await fetch("/api/tags", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ action: "removeFromMedia", tag, mediaIds: ids }),
+      });
+      if (!res.ok) throw new Error();
+      const data = await res.json();
+      toast(`已从 ${data.affected} 项移除标签「${tag}」`);
+      fetchMedia();
+      fetchTags();
+    } catch {
+      toast("操作失败");
+    }
+  };
+
   const handleSelect = (id: string) => {
     setSelectedIds((prev) => {
       const next = new Set(prev);
@@ -149,7 +196,7 @@ export default function HomePage() {
 
   return (
     <div className="app-layout">
-      <TagSidebar tags={tags} />
+      <TagSidebar tags={tags} tagCounts={tagCounts} />
 
       <header className="header">
         <div className="header-left">
@@ -213,11 +260,13 @@ export default function HomePage() {
       <BulkToolbar
         count={selectedIds.size}
         total={filtered.length}
+        allTags={tags}
         onDelete={handleDeleteSelected}
-        onTag={() => toast("标签编辑功能开发中")}
         onClear={() => setSelectedIds(new Set())}
         onSelectAll={handleSelectAll}
         onInvert={handleInvert}
+        onBulkTagAdd={handleBulkTagAdd}
+        onBulkTagRemove={handleBulkTagRemove}
       />
     </div>
   );

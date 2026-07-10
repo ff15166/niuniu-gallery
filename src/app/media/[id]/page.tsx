@@ -7,6 +7,7 @@ import Link from "next/link";
 import type { Media } from "@/lib/types";
 import DarkModeToggle from "@/components/DarkModeToggle";
 import ImageEditor from "@/components/ImageEditor";
+import TagEditor from "@/components/TagEditor";
 import { useToast } from "@/components/Toast";
 
 export default function MediaDetailPage() {
@@ -18,7 +19,8 @@ export default function MediaDetailPage() {
   const [editing, setEditing] = useState(false);
   const [showEditor, setShowEditor] = useState(false);
   const [caption, setCaption] = useState("");
-  const [tagInput, setTagInput] = useState("");
+  const [editTags, setEditTags] = useState<string[]>([]);
+  const [allTags, setAllTags] = useState<string[]>([]);
 
   const fetchMedia = useCallback(async () => {
     try {
@@ -27,6 +29,7 @@ export default function MediaDetailPage() {
       const data = await res.json();
       setMedia(data);
       setCaption(data.caption ?? "");
+      setEditTags(data.tags ?? []);
     } catch {
       toast("加载失败");
     } finally {
@@ -34,24 +37,29 @@ export default function MediaDetailPage() {
     }
   }, [id, toast]);
 
+  const fetchAllTags = useCallback(async () => {
+    try {
+      const res = await fetch("/api/tags");
+      if (res.ok) setAllTags(await res.json());
+    } catch {}
+  }, []);
+
   useEffect(() => {
     fetchMedia();
-  }, [fetchMedia]);
+    fetchAllTags();
+  }, [fetchMedia, fetchAllTags]);
 
   const handleSave = async () => {
-    const tags = tagInput
-      .split(",")
-      .map((t) => t.trim())
-      .filter(Boolean);
     const res = await fetch(`/api/media/${id}`, {
       method: "PATCH",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ caption, tags }),
+      body: JSON.stringify({ caption, tags: editTags }),
     });
     if (res.ok) {
       toast("已保存");
       setEditing(false);
       fetchMedia();
+      fetchAllTags();
     } else {
       toast("保存失败");
     }
@@ -120,19 +128,25 @@ export default function MediaDetailPage() {
                 placeholder="描述"
                 value={caption}
                 onChange={(e) => setCaption(e.target.value)}
-                style={{ marginBottom: 8 }}
+                style={{ marginBottom: 12 }}
               />
-              <input
-                className="input"
-                placeholder="标签（逗号分隔）"
-                value={tagInput}
-                onChange={(e) => setTagInput(e.target.value)}
-              />
-              <div style={{ marginTop: 8, display: "flex", gap: 8 }}>
+              <div style={{ marginBottom: 12 }}>
+                <label className="editor-label">标签</label>
+                <TagEditor
+                  tags={editTags}
+                  allTags={allTags}
+                  onChange={setEditTags}
+                />
+              </div>
+              <div style={{ display: "flex", gap: 8 }}>
                 <button className="btn btn-primary btn-sm" onClick={handleSave}>
                   保存
                 </button>
-                <button className="btn btn-ghost btn-sm" onClick={() => setEditing(false)}>
+                <button className="btn btn-ghost btn-sm" onClick={() => {
+                  setEditing(false);
+                  setEditTags(media.tags ?? []);
+                  setCaption(media.caption ?? "");
+                }}>
                   取消
                 </button>
               </div>
@@ -156,7 +170,8 @@ export default function MediaDetailPage() {
             <button
               className="btn btn-ghost btn-sm"
               onClick={() => {
-                setTagInput(media.tags.join(", "));
+                setEditTags(media.tags ?? []);
+                setCaption(media.caption ?? "");
                 setEditing(!editing);
               }}
             >
@@ -189,7 +204,6 @@ export default function MediaDetailPage() {
         <ImageEditor
           src={media.original_url}
           onSave={async (dataUrl) => {
-            // Convert data URL to file and re-upload
             const res = await fetch(dataUrl);
             const blob = await res.blob();
             const file = new File([blob], "edited.jpg", { type: "image/jpeg" });
@@ -201,7 +215,6 @@ export default function MediaDetailPage() {
             if (uploadRes.ok) {
               toast("已保存编辑");
               setShowEditor(false);
-              // Navigate to new image
               const newMedia = await uploadRes.json();
               router.push(`/media/${newMedia.id}`);
             } else {

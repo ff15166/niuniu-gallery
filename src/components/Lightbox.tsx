@@ -71,7 +71,14 @@ export default function Lightbox({ media, index, onClose, onNavigate }: Lightbox
         )}
 
         <div className="lightbox-info">
-          {current.caption && <p>{current.caption}</p>}
+          {current.caption && <p className="lightbox-caption">{current.caption}</p>}
+          {current.tags.length > 0 && (
+            <div className="lightbox-tags">
+              {current.tags.map((t) => (
+                <span key={t} className="lightbox-tag">🏷️ {t}</span>
+              ))}
+            </div>
+          )}
           <span className="lightbox-counter">
             {index + 1} / {media.length}
           </span>

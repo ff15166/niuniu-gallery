@@ -6,9 +6,10 @@ import DarkModeToggle from "./DarkModeToggle";
 
 interface TagSidebarProps {
   tags: string[];
+  tagCounts?: Record<string, number>;
 }
 
-export default function TagSidebar({ tags }: TagSidebarProps) {
+export default function TagSidebar({ tags, tagCounts }: TagSidebarProps) {
   const pathname = usePathname();
 
   return (
@@ -43,6 +44,9 @@ export default function TagSidebar({ tags }: TagSidebarProps) {
               }`}
             >
               🏷️ {tag}
+              {tagCounts && tagCounts[tag] != null && (
+                <span className="sidebar-tag-count">{tagCounts[tag]}</span>
+              )}
             </Link>
           ))
         )}

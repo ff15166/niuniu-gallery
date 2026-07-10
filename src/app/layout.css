@@ -777,6 +777,28 @@
   color: white;
   text-align: center;
   text-shadow: 0 1px 4px rgba(0,0,0,0.5);
+  max-width: 80vw;
+}
+
+.lightbox-caption {
+  font-size: 15px;
+  margin-bottom: 6px;
+}
+
+.lightbox-tags {
+  display: flex;
+  gap: 6px;
+  justify-content: center;
+  flex-wrap: wrap;
+  margin-bottom: 8px;
+}
+
+.lightbox-tag {
+  padding: 2px 10px;
+  background: rgba(255,255,255,0.2);
+  border-radius: 999px;
+  font-size: 12px;
+  backdrop-filter: blur(4px);
 }
 
 .lightbox-counter {
@@ -1068,4 +1090,120 @@
   gap: 8px;
   justify-content: flex-end;
   margin-top: 16px;
+}
+
+/* === Tag Editor === */
+.tag-editor {
+  width: 100%;
+}
+
+.tag-editor-compact {
+  max-width: 100%;
+}
+
+.tag-editor-tags {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 6px;
+  padding: 8px 10px;
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius);
+  background: var(--bg-card);
+  min-height: 40px;
+  cursor: text;
+  transition: border-color var(--transition);
+}
+
+.tag-editor-tags:focus-within {
+  border-color: var(--accent);
+}
+
+.tag-editor-tag {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 3px 8px;
+  background: var(--accent);
+  color: #fff;
+  border-radius: 999px;
+  font-size: 12px;
+  white-space: nowrap;
+}
+
+.tag-editor-remove {
+  cursor: pointer;
+  opacity: 0.7;
+  font-size: 10px;
+  padding: 0 2px;
+}
+
+.tag-editor-remove:hover {
+  opacity: 1;
+}
+
+.tag-editor-input-wrap {
+  position: relative;
+  flex: 1;
+  min-width: 100px;
+}
+
+.tag-editor-input {
+  width: 100%;
+  border: none;
+  outline: none;
+  background: transparent;
+  color: var(--text-primary);
+  font-size: 13px;
+  font-family: inherit;
+  padding: 2px 0;
+}
+
+.tag-editor-dropdown {
+  position: absolute;
+  top: calc(100% + 4px);
+  left: 0;
+  right: 0;
+  background: var(--bg-card);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow-md);
+  max-height: 200px;
+  overflow-y: auto;
+  z-index: 110;
+}
+
+.tag-editor-option {
+  padding: 8px 12px;
+  font-size: 13px;
+  cursor: pointer;
+  transition: background var(--transition);
+}
+
+.tag-editor-option.active {
+  background: var(--bg-secondary);
+}
+
+.tag-editor-option:hover {
+  background: var(--bg-secondary);
+}
+
+.tag-editor-option-new {
+  color: var(--accent);
+  font-weight: 600;
+  border-top: 1px solid var(--border-color);
+}
+
+/* === Sidebar Tag Count === */
+.sidebar-tag-count {
+  margin-left: auto;
+  font-size: 11px;
+  color: var(--text-secondary);
+  opacity: 0.6;
+  min-width: 18px;
+  text-align: center;
+}
+
+.sidebar-link:hover .sidebar-tag-count {
+  opacity: 1;
 }
