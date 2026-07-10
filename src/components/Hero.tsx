@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef } from "react";
 
 interface Stats {
   photos: number;
@@ -10,6 +10,8 @@ interface Stats {
 
 export default function Hero() {
   const [stats, setStats] = useState<Stats>({ photos: 0, videos: 0, tags: 0 });
+  const [heroImage, setHeroImage] = useState<string | null>(null);
+  const fileRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
     fetch("/api/media?limit=500")
@@ -22,17 +24,51 @@ export default function Hero() {
         setStats({ photos, videos, tags: tagSet.size });
       })
       .catch(() => {});
+
+    // Load saved hero image
+    try {
+      const saved = localStorage.getItem("heroImage");
+      if (saved) setHeroImage(saved);
+    } catch {}
   }, []);
+
+  const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onload = () => {
+      const dataUrl = reader.result as string;
+      setHeroImage(dataUrl);
+      try { localStorage.setItem("heroImage", dataUrl); } catch {}
+    };
+    reader.readAsDataURL(file);
+  };
 
   const today = new Date();
   const dateStr = `${today.getFullYear()}年${today.getMonth() + 1}月${today.getDate()}日`;
 
   return (
     <section className="hero">
-      <div className="hero-image-wrap">
-        <div className="hero-image-placeholder">
-          <span>📸</span>
-        </div>
+      <div
+        className="hero-image-wrap"
+        onClick={() => fileRef.current?.click()}
+        title="点击更换封面图"
+      >
+        {heroImage ? (
+          <img src={heroImage} alt="封面" className="hero-image" />
+        ) : (
+          <div className="hero-image-placeholder">
+            <span>📸</span>
+            <span className="hero-image-hint">点击更换封面图</span>
+          </div>
+        )}
+        <input
+          ref={fileRef}
+          type="file"
+          accept="image/*"
+          hidden
+          onChange={handleImageChange}
+        />
       </div>
       <div className="hero-content">
         <div className="hero-deco">
