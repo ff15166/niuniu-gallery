@@ -1,9 +1,8 @@
 "use client";
 
-import { useEffect, useState, useCallback, useMemo } from "react";
+import { useEffect, useState, useCallback } from "react";
 import { useParams } from "next/navigation";
 import type { Media } from "@/lib/types";
-import TagSidebar from "@/components/TagSidebar";
 import PhotoGrid from "@/components/PhotoGrid";
 import DarkModeToggle from "@/components/DarkModeToggle";
 import { useToast } from "@/components/Toast";
@@ -14,31 +13,16 @@ export default function TagDetailPage() {
   const { toast } = useToast();
   const [media, setMedia] = useState<Media[]>([]);
   const [allMedia, setAllMedia] = useState<Media[]>([]);
-  const [allTags, setAllTags] = useState<string[]>([]);
   const [loading, setLoading] = useState(true);
-
-  const tagCounts = useMemo(() => {
-    const counts: Record<string, number> = {};
-    for (const m of allMedia) {
-      for (const t of m.tags) {
-        counts[t] = (counts[t] || 0) + 1;
-      }
-    }
-    return counts;
-  }, [allMedia]);
 
   const fetchData = useCallback(async () => {
     try {
-      const [mediaRes, tagsRes] = await Promise.all([
-        fetch(`/api/media?limit=200`),
-        fetch("/api/tags"),
-      ]);
+      const mediaRes = await fetch(`/api/media?limit=200`);
       if (mediaRes.ok) {
         const all: Media[] = await mediaRes.json();
         setAllMedia(all);
         setMedia(all.filter((m) => m.tags.includes(tag)));
       }
-      if (tagsRes.ok) setAllTags(await tagsRes.json());
     } catch {
       toast("加载失败");
     } finally {
@@ -52,8 +36,6 @@ export default function TagDetailPage() {
 
   return (
     <div className="app-layout">
-      <TagSidebar tags={allTags} tagCounts={tagCounts} />
-
       <header className="header">
         <div className="header-left">
           <span className="header-title">🏷️ {tag}</span>

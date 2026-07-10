@@ -2,7 +2,6 @@
 
 import { useEffect, useState, useCallback, useMemo } from "react";
 import type { Media } from "@/lib/types";
-import TagSidebar from "@/components/TagSidebar";
 import Hero from "@/components/Hero";
 import SearchBar from "@/components/SearchBar";
 import TagManager from "@/components/TagManager";
@@ -196,8 +195,6 @@ export default function HomePage() {
 
   return (
     <div className="app-layout">
-      <TagSidebar tags={tags} tagCounts={tagCounts} />
-
       <header className="header">
         <div className="header-left">
           <button className="btn btn-ghost" onClick={() => setShowUpload(!showUpload)}>

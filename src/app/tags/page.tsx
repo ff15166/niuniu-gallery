@@ -2,7 +2,6 @@
 
 import { useEffect, useState, useCallback } from "react";
 import Link from "next/link";
-import TagSidebar from "@/components/TagSidebar";
 import DarkModeToggle from "@/components/DarkModeToggle";
 
 export default function TagsPage() {
@@ -24,8 +23,6 @@ export default function TagsPage() {
 
   return (
     <div className="app-layout">
-      <TagSidebar tags={tags} />
-
       <header className="header">
         <div className="header-left">
           <span className="header-title">所有标签</span>

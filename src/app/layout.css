@@ -1,88 +1,6 @@
 @import "../styles/globals.css";
 @import "../styles/decorations.css";
 
-/* === Sidebar === */
-.sidebar {
-  position: fixed;
-  left: 0;
-  top: 0;
-  bottom: 0;
-  width: var(--sidebar-width);
-  background: var(--bg-secondary);
-  border-right: 1px solid var(--border-color);
-  z-index: 50;
-  overflow-y: auto;
-  transition: transform var(--transition);
-}
-
-.sidebar-header {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  padding: 16px;
-  border-bottom: 1px solid var(--border-color);
-}
-
-.sidebar-logo {
-  font-size: 18px;
-  font-weight: 700;
-}
-
-.sidebar-nav {
-  padding: 12px 8px;
-}
-
-.sidebar-link {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  padding: 8px 12px;
-  border-radius: var(--radius);
-  font-size: 14px;
-  color: var(--text-secondary);
-  transition: all var(--transition);
-}
-
-.sidebar-link:hover {
-  background: var(--bg-primary);
-  color: var(--text-primary);
-}
-
-.sidebar-link.active {
-  background: var(--accent);
-  color: var(--bg-primary);
-}
-
-.sidebar-divider {
-  height: 1px;
-  background: var(--border-color);
-  margin: 8px 0;
-}
-
-.sidebar-section-title {
-  font-size: 11px;
-  text-transform: uppercase;
-  letter-spacing: 0.08em;
-  color: var(--text-secondary);
-  padding: 8px 12px 4px;
-}
-
-.sidebar-empty {
-  font-size: 13px;
-  color: var(--text-secondary);
-  padding: 8px 12px;
-  font-style: italic;
-}
-
-@media (max-width: 768px) {
-  .sidebar {
-    transform: translateX(-100%);
-  }
-  .sidebar.open {
-    transform: translateX(0);
-  }
-}
-
 /* === Hero === */
 .hero {
   display: grid;
@@ -470,7 +388,7 @@
 .header {
   position: fixed;
   top: 0;
-  left: var(--sidebar-width);
+  left: 0;
   right: 0;
   height: var(--header-height);
   background: var(--bg-primary);
@@ -498,12 +416,6 @@
   display: flex;
   align-items: center;
   gap: 8px;
-}
-
-@media (max-width: 768px) {
-  .header {
-    left: 0;
-  }
 }
 
 /* === Media Card === */
@@ -1209,18 +1121,4 @@
   color: var(--accent);
   font-weight: 600;
   border-top: 1px solid var(--border-color);
-}
-
-/* === Sidebar Tag Count === */
-.sidebar-tag-count {
-  margin-left: auto;
-  font-size: 11px;
-  color: var(--text-secondary);
-  opacity: 0.6;
-  min-width: 18px;
-  text-align: center;
-}
-
-.sidebar-link:hover .sidebar-tag-count {
-  opacity: 1;
 }
