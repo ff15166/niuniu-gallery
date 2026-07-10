@@ -2,10 +2,10 @@ import db from "./db";
 import { readFileSync } from "fs";
 import { join } from "path";
 
-let initialized = false;
+let schemaApplied = false;
 
 export async function ensureDb() {
-  if (initialized) return;
+  if (schemaApplied) return;
   try {
     const schema = readFileSync(join(process.cwd(), "src/lib/schema.sql"), "utf-8");
     const statements = schema
@@ -15,8 +15,9 @@ export async function ensureDb() {
     for (const sql of statements) {
       await db.execute(sql);
     }
-    initialized = true;
+    schemaApplied = true;
   } catch (err) {
     console.error("DB init error:", err);
+    // Don't set schemaApplied = true on error, so it retries next time
   }
 }
