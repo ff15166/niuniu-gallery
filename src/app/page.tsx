@@ -5,10 +5,12 @@ import type { Media } from "@/lib/types";
 import TagSidebar from "@/components/TagSidebar";
 import Hero from "@/components/Hero";
 import SearchBar from "@/components/SearchBar";
+import TagManager from "@/components/TagManager";
 import PhotoGrid from "@/components/PhotoGrid";
 import Skeleton from "@/components/Skeleton";
 import UploadZone from "@/components/UploadZone";
 import Lightbox from "@/components/Lightbox";
+import BottomHero from "@/components/BottomHero";
 import BulkToolbar from "@/components/BulkToolbar";
 import Weather from "@/components/Weather";
 import BackgroundMusic from "@/components/BackgroundMusic";
@@ -18,11 +20,15 @@ export default function HomePage() {
   const [media, setMedia] = useState<Media[]>([]);
   const [filtered, setFiltered] = useState<Media[]>([]);
   const [tags, setTags] = useState<string[]>([]);
+  const [activeTag, setActiveTag] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
   const [lightboxIdx, setLightboxIdx] = useState<number | null>(null);
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
   const [selectMode, setSelectMode] = useState(false);
   const [showUpload, setShowUpload] = useState(false);
+  const [searchQuery, setSearchQuery] = useState("");
+  const [dateFrom, setDateFrom] = useState("");
+  const [dateTo, setDateTo] = useState("");
   const { toast } = useToast();
 
   const fetchMedia = useCallback(async () => {
@@ -31,7 +37,6 @@ export default function HomePage() {
       if (!res.ok) throw new Error("Failed");
       const data = await res.json();
       setMedia(data);
-      setFiltered(data);
     } catch {
       toast("加载失败");
     } finally {
@@ -51,34 +56,45 @@ export default function HomePage() {
     fetchTags();
   }, [fetchMedia, fetchTags]);
 
+  // Apply filters whenever media, activeTag, search, or dates change
+  useEffect(() => {
+    let result = [...media];
+
+    if (activeTag) {
+      result = result.filter((m) => m.tags.includes(activeTag));
+    }
+
+    if (searchQuery) {
+      const q = searchQuery.toLowerCase();
+      result = result.filter(
+        (m) =>
+          m.filename.toLowerCase().includes(q) ||
+          m.caption?.toLowerCase().includes(q) ||
+          m.tags.some((t) => t.toLowerCase().includes(q))
+      );
+    }
+
+    if (dateFrom) {
+      const from = new Date(dateFrom);
+      result = result.filter((m) => new Date(m.created_at) >= from);
+    }
+
+    if (dateTo) {
+      const to = new Date(dateTo);
+      to.setHours(23, 59, 59, 999);
+      result = result.filter((m) => new Date(m.created_at) <= to);
+    }
+
+    setFiltered(result);
+  }, [media, activeTag, searchQuery, dateFrom, dateTo]);
+
   const handleSearch = useCallback(
-    (query: string, dateFrom: string, dateTo: string) => {
-      let result = [...media];
-
-      if (query) {
-        const q = query.toLowerCase();
-        result = result.filter(
-          (m) =>
-            m.filename.toLowerCase().includes(q) ||
-            m.caption?.toLowerCase().includes(q) ||
-            m.tags.some((t) => t.toLowerCase().includes(q))
-        );
-      }
-
-      if (dateFrom) {
-        const from = new Date(dateFrom);
-        result = result.filter((m) => new Date(m.created_at) >= from);
-      }
-
-      if (dateTo) {
-        const to = new Date(dateTo);
-        to.setHours(23, 59, 59, 999);
-        result = result.filter((m) => new Date(m.created_at) <= to);
-      }
-
-      setFiltered(result);
+    (query: string, from: string, to: string) => {
+      setSearchQuery(query);
+      setDateFrom(from);
+      setDateTo(to);
     },
-    [media]
+    []
   );
 
   const handleUpload = async (files: File[]) => {
@@ -159,6 +175,15 @@ export default function HomePage() {
       <main className="main-content">
         <Hero />
         <SearchBar onSearch={handleSearch} />
+        <TagManager
+          tags={tags}
+          activeTag={activeTag}
+          onSelect={setActiveTag}
+          onRefresh={() => {
+            fetchMedia();
+            fetchTags();
+          }}
+        />
 
         {showUpload && <UploadZone onUpload={handleUpload} />}
 
@@ -172,6 +197,8 @@ export default function HomePage() {
             onSelect={handleSelect}
           />
         )}
+
+        {!loading && filtered.length > 0 && <BottomHero />}
       </main>
 
       {lightboxIdx !== null && (
