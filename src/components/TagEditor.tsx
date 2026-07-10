@@ -24,6 +24,8 @@ export default function TagEditor({ tags, allTags, onChange, compact }: TagEdito
       )
     : allTags.filter((t) => !tags.includes(t));
 
+  const canAdd = input.trim() && !tags.includes(input.trim());
+
   // Close dropdown on outside click
   useEffect(() => {
     const handleClick = (e: MouseEvent) => {
@@ -42,12 +44,13 @@ export default function TagEditor({ tags, allTags, onChange, compact }: TagEdito
 
   const addTag = (tag: string) => {
     const t = tag.trim();
-    if (t && !tags.includes(t)) {
-      onChange([...tags, t]);
-    }
+    if (!t) return;
+    if (tags.includes(t)) return;
+    onChange([...tags, t]);
     setInput("");
     setShowDropdown(false);
     setHighlightIdx(0);
+    inputRef.current?.focus();
   };
 
   const removeTag = (tag: string) => {
@@ -57,17 +60,17 @@ export default function TagEditor({ tags, allTags, onChange, compact }: TagEdito
   const handleKeyDown = (e: React.KeyboardEvent) => {
     if (e.key === "Enter") {
       e.preventDefault();
-      if (highlightIdx >= 0 && highlightIdx < filtered.length) {
+      if (showDropdown && highlightIdx >= 0 && highlightIdx < filtered.length) {
         addTag(filtered[highlightIdx]);
       } else if (input.trim()) {
         addTag(input.trim());
       }
     } else if (e.key === "Backspace" && !input && tags.length > 0) {
       removeTag(tags[tags.length - 1]);
-    } else if (e.key === "ArrowDown") {
+    } else if (e.key === "ArrowDown" && showDropdown) {
       e.preventDefault();
       setHighlightIdx((i) => Math.min(i + 1, filtered.length - 1));
-    } else if (e.key === "ArrowUp") {
+    } else if (e.key === "ArrowUp" && showDropdown) {
       e.preventDefault();
       setHighlightIdx((i) => Math.max(i - 1, 0));
     } else if (e.key === "Escape") {
@@ -90,7 +93,7 @@ export default function TagEditor({ tags, allTags, onChange, compact }: TagEdito
           <input
             ref={inputRef}
             className="tag-editor-input"
-            placeholder={tags.length === 0 ? "添加标签..." : ""}
+            placeholder={tags.length === 0 ? "输入标签名称..." : "添加标签..."}
             value={input}
             onChange={(e) => {
               setInput(e.target.value);
@@ -100,7 +103,7 @@ export default function TagEditor({ tags, allTags, onChange, compact }: TagEdito
             onFocus={() => setShowDropdown(true)}
             onKeyDown={handleKeyDown}
           />
-          {showDropdown && (filtered.length > 0 || (input.trim() && !allTags.includes(input.trim()))) && (
+          {showDropdown && (filtered.length > 0 || canAdd) && (
             <div className="tag-editor-dropdown" ref={dropdownRef}>
               {filtered.map((tag, i) => (
                 <div
@@ -117,7 +120,7 @@ export default function TagEditor({ tags, allTags, onChange, compact }: TagEdito
                   🏷️ {tag}
                 </div>
               ))}
-              {input.trim() && !allTags.includes(input.trim()) && (
+              {canAdd && !allTags.includes(input.trim()) && (
                 <div
                   className={`tag-editor-option tag-editor-option-new ${
                     highlightIdx === filtered.length ? "active" : ""
@@ -134,6 +137,19 @@ export default function TagEditor({ tags, allTags, onChange, compact }: TagEdito
             </div>
           )}
         </div>
+        {canAdd && (
+          <button
+            type="button"
+            className="tag-editor-add-btn"
+            onClick={(e) => {
+              e.preventDefault();
+              addTag(input.trim());
+            }}
+            title={`添加「${input.trim()}」`}
+          >
+            添加
+          </button>
+        )}
       </div>
     </div>
   );
