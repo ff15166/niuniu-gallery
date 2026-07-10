@@ -48,6 +48,7 @@
   overflow: hidden;
   margin-bottom: 48px;
   background: var(--bg-primary);
+  width: 100%;
 }
 
 .hero-image-wrap {
@@ -97,7 +98,7 @@
 }
 
 .hero-content {
-  padding: 80px 60px;
+  padding: 80px 60px 80px 40px;
   display: flex;
   flex-direction: column;
   justify-content: center;
@@ -170,6 +171,7 @@
   margin-bottom: 24px;
   flex-wrap: wrap;
   gap: 12px;
+  padding: 0 48px;
 }
 
 .section-title {
@@ -246,7 +248,8 @@
 
 /* === Tag Manager === */
 .tag-manager {
-  margin-bottom: 24px;
+  margin-bottom: 32px;
+  padding: 0 48px;
 }
 
 .tag-nav {
@@ -549,6 +552,7 @@
   height: 400px;
   overflow: hidden;
   margin-bottom: 0;
+  width: 100%;
 }
 
 .bottom-hero-overlay {
@@ -605,6 +609,7 @@
   color: var(--bg-primary);
   padding: 48px 24px 24px;
   text-align: center;
+  width: 100%;
 }
 
 .footer-logo {
@@ -717,7 +722,7 @@
   text-align: center;
   cursor: pointer;
   transition: all var(--transition);
-  margin-bottom: 24px;
+  margin: 0 48px 24px;
 }
 
 .upload-zone:hover,

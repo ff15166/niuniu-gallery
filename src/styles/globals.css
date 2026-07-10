@@ -69,16 +69,14 @@ img { max-width: 100%; display: block; }
 
 .main-content {
   flex: 1;
-  padding: calc(var(--header-height) + 24px) 24px 100px;
+  padding: calc(var(--header-height) + 24px) 0 100px;
   min-height: 100vh;
-  max-width: 1200px;
-  margin: 0 auto;
   width: 100%;
 }
 
 @media (max-width: 768px) {
   .main-content {
-    padding: calc(var(--header-height) + 16px) 16px 100px;
+    padding: calc(var(--header-height) + 16px) 0 100px;
   }
 }
 
