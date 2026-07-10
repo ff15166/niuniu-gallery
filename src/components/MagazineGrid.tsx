@@ -138,13 +138,14 @@ export default function MagazineGrid({
               />
             )}
             <Link href={`/media/${m.id}`} className="grid-photo">
-              {m.thumbnail_url || m.original_url ? (
+              {(m.thumbnail_url || m.original_url) ? (
                 <Image
                   src={m.thumbnail_url || m.original_url}
                   alt={m.caption ?? m.filename}
                   fill
-                  sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 25vw"
+                  sizes="(max-width: 640px) 50vw, (max-width: 1024px) 33vw, 25vw"
                   style={{ objectFit: "cover" }}
+                  quality={75}
                 />
               ) : (
                 <div style={{

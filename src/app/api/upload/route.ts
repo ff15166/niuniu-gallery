@@ -101,8 +101,8 @@ export async function POST(request: Request) {
 
           const thumbName = `thumb-${safeName.replace(/\.\w+$/, ".webp")}`;
           const thumbBuffer = await sharp(buffer)
-            .resize(400, 400, { fit: "cover" })
-            .webp({ quality: 80 })
+            .resize(800, 800, { fit: "inside", withoutEnlargement: true })
+            .webp({ quality: 82 })
             .toBuffer();
           writeFileSync(join(uploadsDir, thumbName), thumbBuffer);
           thumbnailUrl = `/uploads/${thumbName}`;
